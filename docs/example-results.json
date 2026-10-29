@@ -1,0 +1,32 @@
+{
+  "pharmacokinetics": {
+    "auc_0_24_mg_h_L": 24.79942157862684,
+    "auc_infinity_mg_h_L": 25.00516525485234,
+    "terminal_rate_h_inverse": 0.20000000000000281,
+    "half_life_h": 3.4657359027996777,
+    "clearance_L_h": 3.999173729939443,
+    "volume_L": 19.995868649696934,
+    "reference_auc_infinity_mg_h_L": 25.0,
+    "reference_clearance_L_h": 4.0,
+    "reference_volume_L": 20.0,
+    "dose_mg": 100.0
+  },
+  "dissolution": {
+    "t50_min": 8.664339756999317,
+    "t90_min": 28.782313662425572,
+    "mean_sampled_percent": 63.61264793070303,
+    "final_percent": 99.17702529509799
+  },
+  "statistics": {
+    "seed": 2026,
+    "n_per_group": 30,
+    "mean_a": 9.70353832055987,
+    "mean_b": 11.982526264063107,
+    "sd_a": 2.5192142183887114,
+    "sd_b": 1.7425846561025495,
+    "difference_b_minus_a": 2.278987943503237,
+    "welch_df": 51.5816724653199,
+    "ci95_low": 1.156540605148109,
+    "ci95_high": 3.4014352818583653
+  }
+}

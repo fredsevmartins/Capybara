@@ -1,0 +1,7 @@
+include uv.lock
+include CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md CHANGELOG.md CITATION.cff
+recursive-include docs *.md *.mmd *.svg *.json
+recursive-include examples *.py *.orepro
+recursive-exclude examples/generated *
+recursive-include scripts *.py
+recursive-include .github *.md *.yml

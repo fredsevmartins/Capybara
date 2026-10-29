@@ -1,0 +1,9 @@
+# Architecture
+
+```mermaid
+flowchart LR
+    A[Researcher] --> B[CLI or local MCP]
+    B --> C[OpenRepro core]
+    C --> D[Research ZIP package]
+    D --> E[Other researcher]
+```

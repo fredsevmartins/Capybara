@@ -1,0 +1,10 @@
+# Reproducibility
+
+```mermaid
+flowchart LR
+    O[Original results] --> P[Imported research package]
+    P --> V[Integrity validation in v0.1]
+    P -.-> I[Independent sandboxed calculation: planned v0.2]
+    I -.-> C[Result comparison: planned v0.2]
+    O -.-> C
+```

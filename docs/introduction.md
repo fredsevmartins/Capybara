@@ -1,0 +1,23 @@
+# OpenRepro documentation
+
+OpenRepro preserves and exchanges experiment files without executing imported code.
+
+- [Installation](installation.md)
+- [Quick start](quickstart.md)
+- [Architecture](architecture.md)
+- [Package format](package-format.md)
+- [Scientific integrity](scientific-integrity.md)
+- [MCP integration](mcp-integration.md)
+- [CLI reference](cli-reference.md)
+- [Python API](python-api.md)
+- [Synthetic examples](examples.md)
+- [Reproducibility](reproducibility.md)
+- [Security](security.md)
+- [Troubleshooting](troubleshooting.md)
+- [FAQ](faq.md)
+- Workflows: [lifecycle](workflows/experiment-lifecycle.md),
+  [export](workflows/package-export.md), [import](workflows/package-import.md),
+  [validation](workflows/validation.md), [MCP](workflows/mcp-interaction.md)
+
+Version 0.1 validates a deliberately restricted RO-Crate profile, not every
+possible RO-Crate document. Scientific validity remains outside structural validation.

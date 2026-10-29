@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "Please cite OpenRepro when using this software."
+title: "OpenRepro: Share Experiments. Reproduce Science."
+version: 0.1.0
+date-released: 2026-10-29
+license: MIT
+url: "https://github.com/fredsevmartins/OpenRepro"
+repository-code: "https://github.com/fredsevmartins/OpenRepro"
+authors:
+  - name: "OpenRepro contributors"

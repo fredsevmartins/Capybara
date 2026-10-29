@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openrepro"
+version = "0.1.0"
+description = "Portable, verifiable scientific experiment packages"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "OpenRepro contributors"}]
+dependencies = ["pydantic>=2.12,<3", "mcp>=1.29,<2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.4,<10", "ruff>=0.14,<1", "build>=1.2,<2", "setuptools>=75", "wheel", "matplotlib>=3.9,<4", "scipy>=1.14,<2"]
+
+[project.scripts]
+openrepro = "openrepro.cli:main"
+openrepro-mcp = "openrepro.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

@@ -1,0 +1,9 @@
+flowchart TD
+    A[Package received] --> B[Structural validation]
+    B -->|Safe entries| C[Checksum verification]
+    B -->|Unsafe| F[FAIL report]
+    C -->|Match| D[Metadata validation]
+    C -->|Mismatch| F
+    D -->|Consistent| E[PASS or WARN report]
+    D -->|Invalid| F
+    E --> N[Scientific validity not evaluated]
