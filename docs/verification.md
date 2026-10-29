@@ -15,7 +15,7 @@ MCP SDK 1.30.0, pytest 9.2.0, Ruff 0.17.3, Matplotlib 3.11.2 and SciPy 1.18.1.
 | `.venv/bin/python -m build --no-isolation` | Wheel and source archive built |
 | Independent wheel install | Installed in another virtualenv; create/register/export/import/validate passed outside checkout |
 | Three synthetic demonstrations | Generated, exported and re-imported; all validate PASS |
-| `.venv/bin/python scripts/check_docs.py` | 44 local links, six mirrored Mermaid sources, eight CLI commands checked |
+| `.venv/bin/python scripts/check_docs.py` | All local links, six mirrored Mermaid sources, eight CLI commands checked |
 | Mermaid rendering | All six `.mmd` files rendered to SVG using Mermaid and Chromium |
 | Workflow definition | YAML parsed; read-only contents permission and nine OS/Python combinations verified |
 
@@ -42,7 +42,10 @@ The draft adds `api.github.com`, needed for GitHub API visibility and Actions ch
 Saving does not apply network changes, publish the environment or validate a restored task.
 The user must review/save settings and publish the prepared cloud environment.
 
-Git read access and a push dry run succeeded. At report creation, GitHub API requests
+Git read access and push to `main` succeeded. The remote main SHA matched the
+implementation commit `c7b86b2851eccf4cc5604052b3c45e293816db0e`.
+A fresh remote clone verified code, lockfile, documentation, sample packages and workflow.
+GitHub API requests
 were denied by the current network policy, and the direct repository web page returned
 404. Therefore public visibility, GitHub README rendering and Actions outcomes remain
 unverified. A passing local matrix does not substitute for remote CI; only Linux

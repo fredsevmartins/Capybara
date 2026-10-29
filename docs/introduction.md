@@ -15,6 +15,7 @@ OpenRepro preserves and exchanges experiment files without executing imported co
 - [Security](security.md)
 - [Troubleshooting](troubleshooting.md)
 - [FAQ](faq.md)
+- [Verification report](verification.md)
 - Workflows: [lifecycle](workflows/experiment-lifecycle.md),
   [export](workflows/package-export.md), [import](workflows/package-import.md),
   [validation](workflows/validation.md), [MCP](workflows/mcp-interaction.md)
