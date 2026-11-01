@@ -6,7 +6,7 @@ import re
 import shutil
 import sqlite3
 import tempfile
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -27,14 +27,15 @@ def database(catalog: Path):
     db_path = catalog / "catalog.sqlite3"
     if db_path.is_symlink() or (catalog / "packages").is_symlink():
         raise OpenReproError("Catalog symlinks are forbidden")
-    with sqlite3.connect(db_path, timeout=10) as connection:
-        connection.row_factory = sqlite3.Row
-        connection.execute("""CREATE TABLE IF NOT EXISTS packages (
-            sha256 TEXT PRIMARY KEY, experiment TEXT NOT NULL, revision INTEGER NOT NULL,
-            title TEXT NOT NULL, description TEXT NOT NULL, authors TEXT NOT NULL,
-            license TEXT NOT NULL, doi TEXT, keywords TEXT NOT NULL, created TEXT NOT NULL,
-            UNIQUE(experiment, revision))""")
-        yield connection
+    with closing(sqlite3.connect(db_path, timeout=10)) as connection:
+        with connection:
+            connection.row_factory = sqlite3.Row
+            connection.execute("""CREATE TABLE IF NOT EXISTS packages (
+                sha256 TEXT PRIMARY KEY, experiment TEXT NOT NULL, revision INTEGER NOT NULL,
+                title TEXT NOT NULL, description TEXT NOT NULL, authors TEXT NOT NULL,
+                license TEXT NOT NULL, doi TEXT, keywords TEXT NOT NULL, created TEXT NOT NULL,
+                UNIQUE(experiment, revision))""")
+            yield connection
 
 
 def publish_package(package: Path, catalog: Path) -> dict:

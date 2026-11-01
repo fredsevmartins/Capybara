@@ -1,7 +1,7 @@
 # Compatibility and supported API
 
 The software release version, package schema, recipe schema and environment schema
-are independent. The release candidate uses software `1.0.0rc2`, package schema
+are independent. The stable release uses software `1.0.0`, package schema
 `0.1`, recipe schema `0.2` and environment schema `1`. JSON schemas are published
 under [schemas](schemas/README.md), and `openrepro schema --kind ... --output ...`
 exports the currently installed definition.
@@ -19,7 +19,7 @@ behavior. Unknown package/schema versions fail explicitly. No imported script ru
 as part of migration or validation.
 
 Format-breaking changes require a new schema version and an explicit conversion
-path. Software patch releases should preserve supported behavior; release candidates
-can still correct interfaces before final 1.0. A stable label requires the gates in
-the [launch checklist](launch-checklist.md), including external evidence. Do not
-interpret this document or a passing local suite as a completed cross-platform matrix.
+path. Software patch releases preserve supported behavior. Stable 1.0 covers the trusted
+local workflow described in the [release scope](launch-checklist.md). External
+scientific, usability and security evaluations remain unperformed. Actual remote
+matrix outcomes are recorded in the [verification report](verification.md).

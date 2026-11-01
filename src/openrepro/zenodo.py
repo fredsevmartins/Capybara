@@ -72,13 +72,18 @@ def _bucket_url(value):
     return value.rstrip("/")
 
 
-def _request(client, method, url, **kwargs):
+def _request(client, method, url, *, expect_list=False, **kwargs):
     try:
         response = client.request(method, url, follow_redirects=False, **kwargs)
         response.raise_for_status()
         if len(response.content) > 4 * 1024 * 1024:
             raise OpenReproError("Zenodo response exceeds metadata limit")
-        return response.json()
+        value = response.json()
+        if not isinstance(value, list if expect_list else dict):
+            raise OpenReproError("Zenodo returned an unexpected response structure")
+        return value
+    except OpenReproError:
+        raise
     except (httpx.HTTPError, ValueError) as exc:
         raise OpenReproError(
             "Zenodo request failed; check access, metadata and saved deposit journal"
@@ -112,15 +117,23 @@ def zenodo_deposit(
     )
     metadata_hash = hashlib.sha256(json_bytes(metadata)).hexdigest()
     if (
-        journal["sha256"] != checksum
+        journal.get("sha256") != checksum
         or journal.get("metadata_sha256", metadata_hash) != metadata_hash
     ):
         raise OpenReproError("Deposit package/metadata differs from the saved journal")
     journal["metadata_sha256"] = metadata_hash
-    if journal.get("state") == "published":
-        return journal
+    if journal.get("state") not in {"new", "creating", "draft", "publishing", "published"}:
+        raise OpenReproError("Invalid deposit journal state")
+    if "id" in journal and (type(journal["id"]) is not int or journal["id"] < 1):
+        raise OpenReproError("Invalid deposition ID in saved journal")
+    if journal.get("state") in {"publishing", "published"} and "id" not in journal:
+        raise OpenReproError("Published deposit journal has no deposition ID")
     if deposition_id is not None:
-        if deposition_id < 1 or journal.get("id", deposition_id) != deposition_id:
+        if (
+            type(deposition_id) is not int
+            or deposition_id < 1
+            or journal.get("id", deposition_id) != deposition_id
+        ):
             raise OpenReproError("Invalid or conflicting deposition ID")
         journal["id"] = deposition_id
         journal["state"] = "draft"
@@ -143,14 +156,14 @@ def zenodo_deposit(
             atomic_write(journal_path, json_bytes(journal))
             created = _request(client, "POST", API, json={})
             identifier = created.get("id")
-            if not isinstance(identifier, int) or identifier < 1:
+            if type(identifier) is not int or identifier < 1:
                 raise OpenReproError("Zenodo returned an invalid deposition ID")
             journal.update(id=identifier, state="draft")
             atomic_write(journal_path, json_bytes(journal))
         url = API + "/" + str(journal["id"])
         remote = _request(client, "GET", url)
         if remote.get("submitted"):
-            files = _request(client, "GET", url + "/files")
+            files = _request(client, "GET", url + "/files", expect_list=True)
             if not any(
                 item.get("filename") == "experiment.orepro"
                 and item.get("checksum", "").removeprefix("md5:") == local_md5

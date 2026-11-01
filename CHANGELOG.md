@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.0 — 2026-11-01
+
+- Stable software contract for trusted local package management, controlled Docker
+  reproduction, comparisons, reports, immutable catalogs and explicit Zenodo deposits.
+- Close catalog database connections after commit and rollback, including Windows.
+- Reconcile cached Zenodo publication with remote file checksums; reject invalid
+  saved deposition identifiers and malformed API response structures.
+- Preserve the OpenRepro Python package and CLI while publishing under Capybara.
+- Document the final technical scope and unperformed independent evaluations.
+  Stable software does not establish the scientific validity of packaged research.
+- GitHub distribution remains the chosen delivery path; PyPI is deferred.
+
 ## 1.0.0rc2 — candidate
 
 - Rename the GitHub repository to Capybara; preserve OpenRepro package/CLI and published artifacts.

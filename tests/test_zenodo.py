@@ -172,3 +172,50 @@ def test_existing_published_record_must_match_bundle(bundle, monkeypatch):
         with pytest.raises(OpenReproError, match="does not match"):
             zenodo_deposit(bundle, deposition_id=99, client=client)
     assert json.loads((bundle / "zenodo.json").read_text())["id"] == 99
+
+
+def test_cached_publication_is_reconciled_with_remote_record(bundle, monkeypatch):
+    monkeypatch.setenv("ZENODO_ACCESS_TOKEN", "synthetic-test-token")
+    client, state = zenodo_service(bundle)
+    with client:
+        zenodo_deposit(bundle, publish=True, client=client)
+    state_calls = []
+
+    def wrong_record(request):
+        state_calls.append(request.url.path)
+        if request.url.path.endswith("/files"):
+            return httpx.Response(200, json=[])
+        return httpx.Response(200, json={"submitted": True, "doi": "10.5281/zenodo.42"})
+
+    with httpx.Client(transport=httpx.MockTransport(wrong_record)) as changed:
+        with pytest.raises(OpenReproError, match="does not match"):
+            zenodo_deposit(bundle, client=changed)
+    assert len(state_calls) == 2
+
+
+@pytest.mark.parametrize("identifier", [True, False, 0, -1, "42", "../record"])
+def test_invalid_saved_deposition_id_performs_no_network(bundle, monkeypatch, identifier):
+    monkeypatch.setenv("ZENODO_ACCESS_TOKEN", "synthetic-test-token")
+    checksum = hashlib.sha256((bundle / "experiment.orepro").read_bytes()).hexdigest()
+    (bundle / "zenodo.json").write_text(
+        json.dumps(
+            {"sha256": checksum, "state": "published", "id": identifier, "doi": "10.5281/zenodo.42"}
+        )
+    )
+
+    def unexpected(request):
+        raise AssertionError("Invalid journal must not reach the network")
+
+    with httpx.Client(transport=httpx.MockTransport(unexpected)) as client:
+        with pytest.raises(OpenReproError, match="Invalid deposition ID"):
+            zenodo_deposit(bundle, client=client)
+
+
+def test_malformed_remote_json_keeps_creation_outcome_uncertain(bundle, monkeypatch):
+    monkeypatch.setenv("ZENODO_ACCESS_TOKEN", "synthetic-test-token")
+    with httpx.Client(
+        transport=httpx.MockTransport(lambda request: httpx.Response(201, json=[]))
+    ) as client:
+        with pytest.raises(OpenReproError, match="unexpected response structure"):
+            zenodo_deposit(bundle, client=client)
+    assert json.loads((bundle / "zenodo.json").read_text())["state"] == "creating"

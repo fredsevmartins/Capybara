@@ -96,7 +96,7 @@ jobs:
             flags+=(--prerelease --latest=false)
           fi
           gh release create "$tag" dist/*.whl dist/*.tar.gz dist/verification.json \
-            --verify-tag --title "OpenRepro ${tag}" --generate-notes "${flags[@]}"
+            --verify-tag --title "Capybara ${tag}" --generate-notes "${flags[@]}"
   pypi:
     if: github.event_name == 'workflow_dispatch' && inputs.publish_pypi
     needs: [verify, github]

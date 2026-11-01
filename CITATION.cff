@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "Please cite OpenRepro when using this software."
-title: "OpenRepro: Share Experiments. Reproduce Science."
-version: 1.0.0rc2
+title: "Capybara / OpenRepro: Share Experiments. Reproduce Science."
+version: 1.0.0
 date-released: 2026-11-01
 license: MIT
 url: "https://github.com/fredsevmartins/Capybara"

@@ -15,7 +15,7 @@ Meet **Repro**, our capybara scientist and companion for reproducible research.
 The manually published record titled 1.0.0rc1 is
 [10.5281/zenodo.23869679](https://doi.org/10.5281/zenodo.23869679).
 The uploaded ZIP is named `OpenRepro-main.zip`; its exact correspondence with the
-rc1 tag has not yet been independently checked. The rc2 corrections are a later
+rc1 tag has not yet been independently checked. The stable 1.0.0 release is a later
 revision and do not replace files in that deposit.
 
 OpenRepro packages protocols, data, analysis and provenance into portable `.orepro`
@@ -23,23 +23,24 @@ archives. It validates integrity, runs explicitly reviewed analysis in Linux Doc
 compares outputs, and exchanges immutable package revisions through a searchable
 catalog or Zenodo.
 
-This checkout is **1.0.0rc2, a release candidate**. Local engineering checks do not
-establish independent scientific validation, public deployment or a published DOI.
-See the [launch checklist](docs/launch-checklist.md) for the remaining release gates.
+This checkout is **1.0.0**, the stable release for trusted local package management
+and explicitly reviewed Docker reproduction. It does not certify scientific validity
+or provide a public multi-user execution service. See the
+[release scope and external evaluation](docs/launch-checklist.md).
 
 ## Download
 
-The verified [v1.0.0rc2 GitHub Release](https://github.com/fredsevmartins/Capybara/releases/tag/v1.0.0rc2)
+The verified [v1.0.0 GitHub Release](https://github.com/fredsevmartins/Capybara/releases/tag/v1.0.0)
 contains an installable wheel, source archive and SHA-256 verification record. No
 PyPI account is required. For a clean installation from the published wheel:
 
 ```bash
-python -m pip install 'https://github.com/fredsevmartins/Capybara/releases/download/v1.0.0rc2/openrepro-1.0.0rc2-py3-none-any.whl'
+python -m pip install 'https://github.com/fredsevmartins/Capybara/releases/download/v1.0.0/openrepro-1.0.0-py3-none-any.whl'
 openrepro version --json
 ```
 
-The published artifacts passed the full OS/Python/Docker release workflow. This
-release remains a candidate while independent research/user acceptance is pending.
+Publication is gated by the full OS/Python/Docker release workflow. Independent
+researcher, usability and security evaluations have not been performed.
 
 ## Install
 

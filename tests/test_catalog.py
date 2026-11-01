@@ -117,3 +117,26 @@ def test_partial_blob_copy_is_removed_and_publication_can_retry(tmp_path, monkey
     monkeypatch.setattr(module.shutil, "copyfileobj", original)
     record = publish_package(package, catalog)
     assert package_path(catalog, record["sha256"]).read_bytes() == package.read_bytes()
+
+
+@pytest.mark.parametrize("fail", [False, True])
+def test_catalog_connections_are_closed_after_commit_or_rollback(tmp_path, fail):
+    import sqlite3
+
+    from openrepro.catalog import database
+
+    connection = None
+    try:
+        with database(tmp_path / "catalog") as connection:
+            connection.execute("CREATE TABLE resource_check (value INTEGER)")
+            connection.execute("INSERT INTO resource_check VALUES (1)")
+            if fail:
+                raise RuntimeError("cancel transaction")
+    except RuntimeError:
+        assert fail
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        connection.execute("SELECT 1")
+    with database(tmp_path / "catalog") as reopened:
+        assert reopened.execute("SELECT COUNT(*) FROM resource_check").fetchone()[0] == (
+            0 if fail else 1
+        )

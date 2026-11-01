@@ -1,9 +1,9 @@
 # Independent acceptance protocol
 
 No external participants or approvals are claimed here. This is a runnable protocol
-for the remaining scientific and usability acceptance gate.
+for external scientific and usability evaluation beyond the stable local software scope.
 
-Ask a researcher who did not implement OpenRepro to install the candidate on another
+Ask a researcher who did not implement OpenRepro to install the published software on another
 machine, obtain a package through its versioned catalog/DOI, inspect the protocol,
 license, provenance and dependencies, and reproduce the declared outputs using only
 the published documentation. Use a real dataset/method the researcher is qualified

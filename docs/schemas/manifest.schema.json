@@ -162,7 +162,7 @@
       "type": "string"
     },
     "software_version": {
-      "default": "1.0.0rc2",
+      "default": "1.0.0",
       "title": "Software Version",
       "type": "string"
     },

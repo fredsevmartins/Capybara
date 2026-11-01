@@ -1,60 +1,61 @@
-# Release acceptance and external gates
+# Stable 1.0 release scope and external evaluation
 
-This file distinguishes implemented engineering work from acceptance that requires
-outside evidence. `1.0.0rc2` is a candidate, not a declaration that every final-product
-gate has been satisfied.
+Version 1.0.0 concludes the software delivery requested by the owner for a
+**trusted local workflow**: organize and validate packages, explicitly reproduce
+reviewed analysis in a local Linux Docker daemon, compare outputs, generate
+reports, and exchange immutable revisions through catalogs or explicit deposits.
+The Python package and commands remain `openrepro`; the repository is Capybara.
 
-| Stage | Engineering delivered | Acceptance still required |
+Earlier candidates proposed broader final-product gates requiring outside
+researcher, usability and security evaluations. Those evaluations have **not**
+been completed. The owner requested completion and GitHub publication; 1.0 narrows
+the release claim to the implemented local software contract. It does not assert
+that those external gates were passed or that research validity was certified.
+
+| Capability | Engineering acceptance | External evidence still absent |
 | --- | --- | --- |
-| 1. Reproducible environments | Binary resolution, exact hashes, registered lock/wheels, offline image build/cache, combined build/run | Representative user studies beyond the supplied cases |
-| 2. Execution reliability | Real tmpfs quota, no writable host mounts, bounded safe collection, timeout/cleanup, labelled recovery journals | Independent security review appropriate to the deployment threat model |
-| 3. Scientific evidence | Attributed real Iris measurements, independently implemented numerical references, units and justified tolerances | Independent researchers assessing real methods and new datasets |
-| 4. Researcher workflow | Recipe assistance, doctor, readable reports, complete CLI/API documentation | Usability feedback from researchers completing the workflow independently |
-| 5. Public sharing | Immutable revisions, search, content identities, citations, read-only catalog, resumable Zenodo integration | Public record confirmed in user screenshot; exact archive/tag identity still needs checking; token only needed for API automation |
-| 6. Release preparation | Native-package regression tests, schemas, supported API, RO-Crate conversion, Python/shell execution, release artifacts and OIDC workflow | Rc2 matrix and GitHub Release downloads/install verified; independent user/scientific/security acceptance and restored-environment validation remain; PyPI is deferred |
+| Environments | Exact hashes, registered wheels/lock, offline image builds | Representative independent user studies |
+| Execution | Explicit reviewed execution, quotas, isolation, cleanup and recovery tests | Independent security review for the deployment threat model |
+| Comparisons | Iris measurements, independently implemented references, units and justified tolerances | Researchers validating new methods and datasets |
+| Workflow | CLI, Python API, MCP management tools, recipes, reports and documentation | Independent researcher usability feedback |
+| Sharing | Immutable revisions, search, citations, read-only catalog, resumable Zenodo client | Exact identity of the manually uploaded rc1 archive against its tag |
+| Distribution | Full OS/Python matrix, real Docker, clean wheel installation, checked release artifacts | Independent installation on a researcher's own machine |
 
-## Published Zenodo record
+## Supported boundaries
 
-The user manually published a record titled OpenRepro 1.0.0rc1:
-[version DOI](https://doi.org/10.5281/zenodo.23869679),
+Package management supports Python 3.11–3.13 on Linux, macOS and Windows. Running
+analysis and building environments require Linux and a trusted local Docker daemon.
+Review imported code and execution recipes before granting explicit execution.
+Docker isolation is defense in depth, not a certified boundary for hostile code.
+The catalog is read-only HTTP for trusted networks; it is not an authenticated
+multi-tenant public service. MCP exposes management, not execution.
+Scientific validity remains `NOT_EVALUATED` regardless of matching results.
+Use the [pilot protocol](pilot-protocol.md) for external evaluation before making
+broader scientific, usability, security or institutional deployment claims.
+
+## Publication acceptance
+
+Before tagging: lint, documentation/schema checks, the complete local suite with
+real Docker, distribution metadata/inventory checks and an installed-wheel
+end-to-end acceptance must pass. GitHub publication additionally requires the
+remote nine-combination OS/Python matrix and Docker verification. Download the
+public artifacts, compare SHA-256 with the CI record and install the downloaded
+wheel in a clean environment. Record actual results in [verification](verification.md).
+Never substitute a tag push for evidence of a successful Release.
+
+## Zenodo and PyPI
+
+The user manually published OpenRepro 1.0.0rc1:
+[version DOI](https://doi.org/10.5281/zenodo.23869679) and
 [project/concept DOI](https://doi.org/10.5281/zenodo.23869678).
-This is evidenced by the supplied published-record screenshot. Direct API access
-remains blocked here. The file is named OpenRepro-main.zip, so a byte/content
-comparison with the immutable rc1 tag remains unverified. Rc2 is a later revision.
-No API token is required to preserve this successful manual publication.
+The screenshot shows `OpenRepro-main.zip`; exact archive/tag correspondence remains
+unverified because direct Zenodo access is blocked in this environment. Preserve
+that archive. Neither rc2 nor 1.0.0 is claimed to be deposited under the rc1 version
+DOI. GitHub–Zenodo integration may archive the stable release automatically; a new
+version DOI must be observed before documenting it as published.
 
-## Current distribution scope
-
-The user deferred PyPI publication. The active distribution path is GitHub plus
-the manually published Zenodo record. No PyPI account/token is required to use
-that path. The trusted-publisher workflow remains optional for later use, and
-PyPI publication is not a prerequisite for the requested GitHub/Zenodo delivery.
-
-## Publishing credentials and infrastructure
-
-The actual cloud configuration had no Zenodo or PyPI credential binding at inspection.
-`ZENODO_ACCESS_TOKEN` and HTTPS access to `zenodo.org` were requested through the
-configuration draft. Add the token securely and save/review the allowed domains;
-never supply token values in chat. The draft also requests `api.github.com` for
-release/CI visibility and `upload.pypi.org` for distribution. A saved requirement is
-not a ready credential or an applied network policy.
-
-For PyPI, establish ownership of `openrepro`, configure a trusted publisher for
-`fredsevmartins/Capybara`, workflow `release.yml`, environment `pypi`, then run the
-manual workflow against a verified tag with `publish_pypi` enabled. It uses scoped
-OIDC, not a committed API token. The workflow builds and verifies artifacts first.
-Do not claim a package is available on PyPI until upload and clean installation
-have actually succeeded.
-
-For Zenodo, prepare a local deposit bundle, review licensing/authorship/resource
-type, create a draft, then explicitly publish. Confirm the returned public DOI.
-The existing source Iris DOI must never be presented as a DOI assigned to this
-software or a newly generated package.
-
-## Final 1.0 decision
-
-Run the local validation and artifact checks, inspect the remote OS/Python matrix,
-complete independent scientific/usability acceptance, perform a security review
-for the intended deployment, publish through the chosen GitHub/Zenodo distribution path, then validate an
-installation on another machine. Record actual URLs, versions, outcomes and limitations
-in the verification report. Until then keep the release-candidate designation.
+PyPI was explicitly deferred by the owner. GitHub delivers the wheel, source and
+checksums without a PyPI account. The optional trusted-publisher workflow remains
+disabled unless explicitly selected in a future manual dispatch. No token belongs
+in chat or source control; API automation can use securely configured credentials
+when needed, and is not required for this GitHub delivery.

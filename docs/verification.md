@@ -1,5 +1,26 @@
 # Verification report
 
+## Stable 1.0.0 local acceptance
+
+The final trusted-local software scope is documented in the
+[release checklist](launch-checklist.md); independent researcher, usability and
+security evaluations have not been performed. This is not scientific certification.
+
+The final local suite passed **190 tests, zero skipped, in 30.31 seconds**,
+including real Docker reproduction. Ruff lint/format, documentation links, workflow
+syntax, wheel/source builds, strict Twine metadata checks and distribution inventories
+passed. Regression cases cover SQLite connection closure after commit/rollback,
+remote reconciliation of cached Zenodo publication, invalid saved deposition IDs
+and malformed API responses.
+
+A separately installed 1.0.0 wheel completed `scripts/acceptance_smoke.py`: binary
+dependency resolution, offline environment build, Iris reproduction, two numerical
+comparisons, HTML report, export/import, catalog exchange, citations, schema export
+and crate conversion. Its module loaded from the clean virtualenv, not the checkout.
+Live Zenodo publication, PyPI and independent user acceptance were explicitly NOT_RUN.
+Remote stable-release publication and download verification are recorded separately
+after observing their actual outcomes.
+
 ## Published rc2 verification
 
 [Main CI 41358831209](https://github.com/fredsevmartins/Capybara/actions/runs/41358831209)
