@@ -1,5 +1,27 @@
 # Verification report
 
+## Published rc2 verification
+
+[Main CI 41358831209](https://github.com/fredsevmartins/OpenRepro/actions/runs/41358831209)
+and [Release 41358830962](https://github.com/fredsevmartins/OpenRepro/actions/runs/41358830962)
+completed successfully for commit 5c0a154. The release workflow ran all nine
+OS/Python combinations, real Docker reproduction and a separate frozen verification
+before publishing [v1.0.0rc2](https://github.com/fredsevmartins/OpenRepro/releases/tag/v1.0.0rc2).
+The PyPI job was not enabled; GitHub is the active distribution path.
+
+The public wheel/source assets and verification.json were downloaded after publication.
+Both artifact hashes matched the CI-produced SHA-256 record, and the published
+source contained the exact mascot bytes. The actual downloaded wheel was installed
+in another clean virtualenv; version/DOI metadata, package export/import, catalog
+publication/fetch and validation passed. The larger independent rc2 acceptance
+also passed dependency resolution, offline build, Iris reproduction, reports,
+comparison, exchange, citations, schema export and local crate conversion.
+
+Direct development-environment API requests remain restricted; GitHub publication
+succeeded using the authorized GitHub workflow token, not a token copied into chat.
+The published rc1 Zenodo ZIP remains unchanged and its exact tag identity remains
+unverified. New rc2 code has not been claimed as deposited under the rc1 version DOI.
+
 ## Rc2 reliability, branding and publication follow-up
 
 After the cross-platform correction, local validation passed **180 tests**, zero

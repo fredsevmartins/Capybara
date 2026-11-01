@@ -25,6 +25,20 @@ This checkout is **1.0.0rc2, a release candidate**. Local engineering checks do 
 establish independent scientific validation, public deployment or a published DOI.
 See the [launch checklist](docs/launch-checklist.md) for the remaining release gates.
 
+## Download
+
+The verified [v1.0.0rc2 GitHub Release](https://github.com/fredsevmartins/OpenRepro/releases/tag/v1.0.0rc2)
+contains an installable wheel, source archive and SHA-256 verification record. No
+PyPI account is required. For a clean installation from the published wheel:
+
+```bash
+python -m pip install 'https://github.com/fredsevmartins/OpenRepro/releases/download/v1.0.0rc2/openrepro-1.0.0rc2-py3-none-any.whl'
+openrepro version --json
+```
+
+The published artifacts passed the full OS/Python/Docker release workflow. This
+release remains a candidate while independent research/user acceptance is pending.
+
 ## Install
 
 Python 3.11+; package management works on Linux, macOS and Windows:

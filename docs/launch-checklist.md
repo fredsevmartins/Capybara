@@ -11,7 +11,7 @@ gate has been satisfied.
 | 3. Scientific evidence | Attributed real Iris measurements, independently implemented numerical references, units and justified tolerances | Independent researchers assessing real methods and new datasets |
 | 4. Researcher workflow | Recipe assistance, doctor, readable reports, complete CLI/API documentation | Usability feedback from researchers completing the workflow independently |
 | 5. Public sharing | Immutable revisions, search, content identities, citations, read-only catalog, resumable Zenodo integration | Public record confirmed in user screenshot; exact archive/tag identity still needs checking; token only needed for API automation |
-| 6. Release preparation | Native-package regression tests, schemas, supported API, RO-Crate conversion, Python/shell execution, release artifacts and OIDC workflow | Rc2 remote OS/Python/Docker checks passed; verified GitHub Release artifacts and restored-environment validation remain; PyPI is deferred |
+| 6. Release preparation | Native-package regression tests, schemas, supported API, RO-Crate conversion, Python/shell execution, release artifacts and OIDC workflow | Rc2 matrix and GitHub Release downloads/install verified; independent user/scientific/security acceptance and restored-environment validation remain; PyPI is deferred |
 
 ## Published Zenodo record
 

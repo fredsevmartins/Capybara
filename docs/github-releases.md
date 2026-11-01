@@ -28,3 +28,11 @@ Zenodo may ignore releases marked as pre-release. Preserve the existing manual
 rc1 deposit and use Zenodo's new-version workflow if a later candidate needs its
 own archived record. Do not change the archived ZIP or reuse its version DOI as a
 claim that a new revision has already been deposited.
+
+
+The rc2 release was exercised end-to-end: the compatibility workflow and verification
+passed, GitHub created the Release and the public wheel/source downloads matched
+the CI checksum record. Installing the actual downloaded wheel in a clean virtualenv
+passed the package/catalog lifecycle. See [verification](verification.md) for run URLs.
+In `verification.json`, `published: false` describes the checker itself performing
+no upload; the separate successful GitHub job/public asset URLs establish publication.
