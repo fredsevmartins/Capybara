@@ -36,3 +36,27 @@ the CI checksum record. Installing the actual downloaded wheel in a clean virtua
 passed the package/catalog lifecycle. See [verification](verification.md) for run URLs.
 In `verification.json`, `published: false` describes the checker itself performing
 no upload; the separate successful GitHub job/public asset URLs establish publication.
+
+## Stable 1.0.0 delivery
+
+[Capybara v1.0.0](https://github.com/fredsevmartins/Capybara/releases/tag/v1.0.0)
+is the verified latest stable GitHub release for the documented trusted local scope.
+Its CI and publication succeeded, downloaded artifact hashes matched the CI record,
+and the actual downloaded wheel passed the complete clean-install CLI acceptance.
+See [verification](verification.md) for evidence and checksums.
+
+Install in a fresh virtualenv (Python 3.11–3.13):
+
+```bash
+python -m venv .venv
+# Unix: source .venv/bin/activate
+# Windows: .venv\Scripts\Activate.ps1
+python -m pip install 'https://github.com/fredsevmartins/Capybara/releases/download/v1.0.0/openrepro-1.0.0-py3-none-any.whl'
+openrepro version --json
+```
+
+Environment locking additionally requires `python -m pip install 'pip>=25,<27'`.
+Execution requires Linux with a trusted local Docker daemon; package management
+works on all three tested operating systems. The Python package and commands keep
+the OpenRepro name. Independent research, usability and security evaluations remain
+unperformed, as described in the [release scope](launch-checklist.md).

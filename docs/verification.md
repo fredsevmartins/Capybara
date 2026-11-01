@@ -18,8 +18,30 @@ dependency resolution, offline environment build, Iris reproduction, two numeric
 comparisons, HTML report, export/import, catalog exchange, citations, schema export
 and crate conversion. Its module loaded from the clean virtualenv, not the checkout.
 Live Zenodo publication, PyPI and independent user acceptance were explicitly NOT_RUN.
-Remote stable-release publication and download verification are recorded separately
-after observing their actual outcomes.
+
+### Published stable release
+
+[Main CI 41361397739](https://github.com/fredsevmartins/Capybara/actions/runs/41361397739)
+and [Release 41361398785](https://github.com/fredsevmartins/Capybara/actions/runs/41361398785)
+both completed successfully for commit `6def95fe982645629aee2b2ecdffe1ca762d7e78`.
+The release ran all nine OS/Python combinations, real Docker reproduction, frozen
+verification and artifact publication. [Capybara v1.0.0](https://github.com/fredsevmartins/Capybara/releases/tag/v1.0.0)
+is public and marked latest. PyPI was not enabled.
+
+The public wheel, source and verification record were downloaded after publication.
+Both SHA-256 digests matched the CI record:
+
+| Public artifact | SHA-256 |
+| --- | --- |
+| `openrepro-1.0.0-py3-none-any.whl` | `63f515ed5df1727c9c9fe0b57f23e48c7fb907301022da12fadce43b836d4749` |
+| `openrepro-1.0.0.tar.gz` | `c18d02747111a51d06b527593e78a0b283e5f3061eeda364590e92479aeefe96` |
+
+The published source contains the exact approved mascot bytes. Installing the
+actual public wheel into a second clean virtualenv and running the complete CLI
+acceptance again passed: offline dependency environment, Iris execution, both
+numerical comparisons, HTML report, package/catalog roundtrip, citations, schema
+export and crate conversion. The installed module came from that virtualenv.
+No new Zenodo version DOI was observed or claimed; the rc1 record remains distinct.
 
 ## Published rc2 verification
 
