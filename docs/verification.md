@@ -1,5 +1,20 @@
 # Verification report
 
+## Rc2 reliability, branding and publication follow-up
+
+After the cross-platform correction, local validation passed **180 tests**, zero
+skipped, in 35.21 seconds. New cases verify interrupted catalog blob copies can
+be removed/retried, including Windows file-handle semantics, and CI reporting keeps
+passed/failed/error/skipped outcomes distinct. JUnit artifacts and escaped summaries
+preserve the original pytest failure status.
+
+The official actionlint 1.7.7 binary was downloaded and verified against its
+upstream SHA-256 checksum; workflow validation passed. The tagged release workflow
+now gates GitHub publication on the full compatibility matrix and verified artifacts.
+PyPI remains deferred and cannot run from a tag push. Repro's transparent PNG was
+checked as 1254×1254 RGBA with a transparent alpha channel and included in source
+package inventory checks.
+
 ## DOI publication and cross-platform follow-up
 
 The user supplied the published Zenodo record page for 23869679, titled OpenRepro
@@ -19,6 +34,11 @@ The rc2 local full suite passed **177 tests**, zero skipped, in 35.16 seconds,
 including all 14 Docker cases and the new path/newline regressions. Lint, schema/docs,
 build and strict Twine checks passed. The corrected remote matrix is checked
 separately after pushing these changes.
+
+[Run 41357838154](https://github.com/fredsevmartins/OpenRepro/actions/runs/41357838154)
+for commit 7417492 completed successfully. Its nine OS/Python matrix combinations
+and the reproduction job passed. This closes the previously observed macOS/Windows
+failures for that commit; subsequent changes receive their own checks.
 
 
 ## 1.0.0rc1 candidate

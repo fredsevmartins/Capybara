@@ -11,7 +11,7 @@ gate has been satisfied.
 | 3. Scientific evidence | Attributed real Iris measurements, independently implemented numerical references, units and justified tolerances | Independent researchers assessing real methods and new datasets |
 | 4. Researcher workflow | Recipe assistance, doctor, readable reports, complete CLI/API documentation | Usability feedback from researchers completing the workflow independently |
 | 5. Public sharing | Immutable revisions, search, content identities, citations, read-only catalog, resumable Zenodo integration | Public record confirmed in user screenshot; exact archive/tag identity still needs checking; token only needed for API automation |
-| 6. Release preparation | Native-package regression tests, schemas, supported API, RO-Crate conversion, Python/shell execution, release artifacts and OIDC workflow | Successful remote CI matrix, PyPI project ownership/trusted publisher, actual distribution and restored-environment validation |
+| 6. Release preparation | Native-package regression tests, schemas, supported API, RO-Crate conversion, Python/shell execution, release artifacts and OIDC workflow | Rc2 remote OS/Python/Docker checks passed; verified GitHub Release artifacts and restored-environment validation remain; PyPI is deferred |
 
 ## Published Zenodo record
 
@@ -22,6 +22,13 @@ This is evidenced by the supplied published-record screenshot. Direct API access
 remains blocked here. The file is named OpenRepro-main.zip, so a byte/content
 comparison with the immutable rc1 tag remains unverified. Rc2 is a later revision.
 No API token is required to preserve this successful manual publication.
+
+## Current distribution scope
+
+The user deferred PyPI publication. The active distribution path is GitHub plus
+the manually published Zenodo record. No PyPI account/token is required to use
+that path. The trusted-publisher workflow remains optional for later use, and
+PyPI publication is not a prerequisite for the requested GitHub/Zenodo delivery.
 
 ## Publishing credentials and infrastructure
 
@@ -48,6 +55,6 @@ software or a newly generated package.
 
 Run the local validation and artifact checks, inspect the remote OS/Python matrix,
 complete independent scientific/usability acceptance, perform a security review
-for the intended deployment, publish the distribution and DOI, then validate an
+for the intended deployment, publish through the chosen GitHub/Zenodo distribution path, then validate an
 installation on another machine. Record actual URLs, versions, outcomes and limitations
 in the verification report. Until then keep the release-candidate designation.

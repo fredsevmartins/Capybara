@@ -8,3 +8,4 @@ dist/
 .coverage
 experiments/
 examples/generated/
+test-results/

@@ -3,6 +3,7 @@
 OpenRepro preserves and exchanges experiment files without executing imported code.
 
 - [Installation](installation.md)
+- [Mascot and brand assets](branding.md)
 - [Quick start](quickstart.md)
 - [Architecture](architecture.md)
 - [Package format](package-format.md)
@@ -20,6 +21,7 @@ OpenRepro preserves and exchanges experiment files without executing imported co
 - [Compatibility and supported API](compatibility.md)
 - [JSON schemas](schemas/README.md)
 - [Launch checklist](launch-checklist.md)
+- [GitHub-first releases](github-releases.md)
 - [PyPI trusted publication](pypi-publication.md)
 - [Security](security.md)
 - [Troubleshooting](troubleshooting.md)

@@ -1,5 +1,9 @@
 name: checks
-on: [push, pull_request]
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_call:
 permissions:
   contents: read
 jobs:
@@ -16,7 +20,17 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e ".[dev]"
-      - run: python -m pytest -q
+      - run: python -m pytest -q --junitxml=test-results/portable.xml
+      - name: Summarize actual test outcomes
+        if: ${{ always() && hashFiles('test-results/portable.xml') != '' }}
+        run: python scripts/summarize_tests.py test-results/portable.xml
+      - name: Save portable test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-${{ matrix.os }}-${{ matrix.python }}
+          path: test-results/portable.xml
+          if-no-files-found: warn
       - run: python -m ruff check .
       - run: python -m ruff format --check .
       - run: python -m build
@@ -40,6 +54,16 @@ jobs:
           docker --host=unix:///var/run/docker.sock pull python:3.12-slim
           echo "OPENREPRO_TEST_IMAGE=$(docker --host=unix:///var/run/docker.sock image inspect --format '{{.Id}}' python:3.12-slim)" >> "$GITHUB_ENV"
       - name: Real offline execution and comparison
-        run: python -m pytest tests/test_reproduction_docker.py -q
+        run: python -m pytest tests/test_reproduction_docker.py -q --junitxml=test-results/docker.xml
+      - name: Summarize Docker outcomes
+        if: ${{ always() && hashFiles('test-results/docker.xml') != '' }}
+        run: python scripts/summarize_tests.py test-results/docker.xml
+      - name: Save Docker test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-docker
+          path: test-results/docker.xml
+          if-no-files-found: warn
       - name: Resolve dependencies and exercise complete CLI workflow
         run: python scripts/acceptance_smoke.py --output experiments/acceptance-ci --image "$OPENREPRO_TEST_IMAGE" --allow-download --allow-execution

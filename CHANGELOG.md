@@ -2,6 +2,10 @@
 
 ## 1.0.0rc2 — candidate
 
+- Add Repro, an original capybara scientist mascot, with transparent artwork and brand usage documentation.
+- Make interrupted catalog copies clean up only after file handles close, including Windows.
+- Preserve JUnit outcomes and expose safe CI failure summaries without masking failed tests.
+
 - Resolve explicitly selected parent-directory aliases without accepting direct or internal symlinks.
 - Make RO-Crate test metadata describe actual LF/CRLF file sizes; preserve mismatch rejection.
 - Register the manually published project DOI and distinguish the rc1 record from later code.

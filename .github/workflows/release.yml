@@ -1,34 +1,53 @@
 name: release
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
-        description: 'Existing tag version, without v (e.g. 1.0.0rc1)'
+        description: 'Existing tag version, without v (e.g. 1.0.0rc2)'
         required: true
         type: string
       publish_pypi:
-        description: 'Publish verified artifacts using the configured PyPI trusted publisher'
+        description: 'Optional, deferred: publish using the configured PyPI trusted publisher'
         type: boolean
         default: false
 permissions:
   contents: read
 jobs:
+  compatibility:
+    uses: ./.github/workflows/ci.yml
   verify:
+    needs: compatibility
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: refs/tags/v${{ inputs.version }}
+          ref: ${{ inputs.version && format('refs/tags/v{0}', inputs.version) || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m pip install uv==0.12.23
       - run: uv sync --frozen --extra dev
       - name: Verify requested version
+        id: version
         env:
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version || github.ref_name }}
         run: |
-          uv run --frozen --extra dev python -c "import os,openrepro; from packaging.version import Version; value=os.environ['RELEASE_VERSION']; assert str(Version(value)) == value == openrepro.__version__"
+          uv run --frozen --extra dev python - <<'PY'
+          import os
+          import openrepro
+          from packaging.version import Version
+          value = os.environ['RELEASE_VERSION'].removeprefix('v')
+          parsed = Version(value)
+          assert str(parsed) == value == openrepro.__version__
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              print('version=' + value, file=output)
+              print('prerelease=' + str(parsed.is_prerelease).lower(), file=output)
+          PY
       - run: uv run --frozen --extra dev ruff check .
       - run: uv run --frozen --extra dev ruff format --check .
       - run: uv run --frozen --extra dev python scripts/check_docs.py
@@ -36,19 +55,51 @@ jobs:
         run: |
           docker --host=unix:///var/run/docker.sock pull python:3.12-slim
           echo "OPENREPRO_TEST_IMAGE=$(docker --host=unix:///var/run/docker.sock image inspect --format '{{.Id}}' python:3.12-slim)" >> "$GITHUB_ENV"
-      - run: uv run --frozen --extra dev python -m pytest -q
+      - run: uv run --frozen --extra dev python -m pytest -q --junitxml=test-results/release.xml
+      - name: Summarize release test outcomes
+        if: ${{ always() && hashFiles('test-results/release.xml') != '' }}
+        run: uv run --frozen --extra dev python scripts/summarize_tests.py test-results/release.xml
       - run: uv run --frozen --extra dev python -m build --no-isolation
       - run: uv run --frozen --extra dev python -m twine check --strict dist/*
-      - run: uv run --frozen --extra dev python scripts/check_release.py
+      - run: uv run --frozen --extra dev python scripts/check_release.py > dist/verification.json
       - name: Save verified distribution
         uses: actions/upload-artifact@v4
         with:
           name: python-distributions
           path: dist/*
           if-no-files-found: error
-  pypi:
-    if: inputs.publish_pypi
+  github:
     needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-distributions
+          path: dist/
+      - name: Publish verified GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.verify.outputs.version }}
+          IS_PRERELEASE: ${{ needs.verify.outputs.prerelease }}
+        shell: bash
+        run: |
+          tag="v${RELEASE_VERSION}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists; preserving its existing artifacts."
+            exit 0
+          fi
+          flags=()
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            flags+=(--prerelease --latest=false)
+          fi
+          gh release create "$tag" dist/*.whl dist/*.tar.gz dist/verification.json \
+            --verify-tag --title "OpenRepro ${tag}" --generate-notes "${flags[@]}"
+  pypi:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_pypi
+    needs: [verify, github]
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -58,5 +109,11 @@ jobs:
         with:
           name: python-distributions
           path: dist/
+      - name: Select only Python distributions
+        run: |
+          mkdir python-dist
+          mv dist/*.whl dist/*.tar.gz python-dist/
       - name: Publish with PyPI trusted publishing
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python-dist/

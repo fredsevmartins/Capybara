@@ -67,12 +67,15 @@ def publish_package(package: Path, catalog: Path) -> dict:
             if target.is_symlink() or digest(target) != checksum:
                 raise OpenReproError("Catalog blob integrity failure")
         else:
-            with copied.open("rb") as source, target.open("xb") as output:
-                try:
+            created_blob = False
+            try:
+                with copied.open("rb") as source, target.open("xb") as output:
+                    created_blob = True
                     shutil.copyfileobj(source, output)
-                except BaseException:
+            except BaseException:
+                if created_blob:
                     target.unlink(missing_ok=True)
-                    raise
+                raise
         db.execute(
             "INSERT INTO packages VALUES (?,?,?,?,?,?,?,?,?,?)",
             (

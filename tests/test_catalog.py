@@ -4,6 +4,7 @@ import json
 import threading
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 import pytest
 
@@ -91,3 +92,28 @@ def test_read_only_http_catalog(published):
         finally:
             server.shutdown()
             worker.join(timeout=5)
+
+
+def test_partial_blob_copy_is_removed_and_publication_can_retry(tmp_path, monkeypatch):
+    from openrepro import catalog as module
+
+    root = tmp_path / "study"
+    create_experiment(root, "Copy recovery", "D", ["A"])
+    package = export_experiment(root, tmp_path / "study.orepro")
+    catalog = tmp_path / "catalog"
+    original = module.shutil.copyfileobj
+
+    def interrupted(source, output, *args, **kwargs):
+        if Path(output.name).parent == catalog / "packages":
+            output.write(b"partial")
+            raise OSError("Injected catalog copy failure")
+        return original(source, output, *args, **kwargs)
+
+    monkeypatch.setattr(module.shutil, "copyfileobj", interrupted)
+    with pytest.raises(OSError, match="Injected catalog copy failure"):
+        publish_package(package, catalog)
+    assert not list((catalog / "packages").glob("*.orepro"))
+    assert search_catalog(catalog) == []
+    monkeypatch.setattr(module.shutil, "copyfileobj", original)
+    record = publish_package(package, catalog)
+    assert package_path(catalog, record["sha256"]).read_bytes() == package.read_bytes()

@@ -47,6 +47,8 @@ def check(directory: Path):
             "uv.lock",
             "README.md",
             "docs/launch-checklist.md",
+            "docs/branding.md",
+            "docs/assets/repro-mascot.png",
             "examples/iris/iris.csv",
             "examples/iris/source.json",
             "tests/test_release_contract.py",

@@ -1,6 +1,11 @@
 # OpenRepro
 
-![OpenRepro logo](docs/assets/logo.svg)
+<p align="center">
+  <img src="docs/assets/repro-mascot.png" width="280" alt="Repro, the capybara scientist holding a verified research package">
+</p>
+
+Meet **Repro**, our capybara scientist and companion for reproducible research.
+[Brand assets and usage](docs/branding.md).
 
 **Share Experiments. Reproduce Science.**
 
@@ -35,7 +40,8 @@ For the locked development environment, use `uv sync --frozen --extra dev`.
 `.[environment]` installs the optional Python dependency resolver. Core package
 management needs no database service, API key, Docker or AI provider. Execution
 and environment construction require Linux and a trusted local Docker daemon.
-PyPI availability is a separate publication gate; use this checkout until confirmed.
+Distribution currently uses GitHub and Zenodo. PyPI publication is optional and
+has been deferred; use this checkout for installation.
 
 ## Create and exchange a package
 
@@ -124,8 +130,8 @@ python scripts/check_release.py
 Docker tests require `OPENREPRO_TEST_IMAGE` set to a reviewed local Python image ID;
 without it they are skipped. CI defines nine portable OS/Python combinations and
 a separate real-Docker job. Remote CI results must be checked independently.
-The manual release workflow verifies tagged artifacts before optional PyPI trusted
-publication. See [verification](docs/verification.md), [compatibility](docs/compatibility.md)
+The [GitHub release workflow](docs/github-releases.md) verifies tagged artifacts
+before attaching them to a Release. PyPI publication remains optional and deferred. See [verification](docs/verification.md), [compatibility](docs/compatibility.md)
 and the [documentation index](docs/introduction.md).
 
 MIT-licensed software. Research payloads retain their declared licenses. See
