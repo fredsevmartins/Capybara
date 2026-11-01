@@ -5,6 +5,7 @@ import unicodedata
 from datetime import UTC, date, datetime
 from enum import StrEnum
 from pathlib import PurePosixPath
+from typing import Literal
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -79,7 +80,7 @@ class FileEntry(StrictModel):
 
 
 class Manifest(StrictModel):
-    schema_version: str = "0.1"
+    schema_version: Literal["0.1"] = "0.1"
     software_version: str = __version__
     identifier: UUID = Field(default_factory=uuid4)
     title: str = Field(min_length=1)

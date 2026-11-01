@@ -1,5 +1,58 @@
 # Verification report
 
+## 1.0.0rc1 candidate
+
+Current-instance validation: Linux x86_64, Python 3.12.14, local Docker 28.4.0.
+The committed development lock and independently installed compatible dependencies
+were exercised. No external participant or scientific approval is claimed.
+
+| Check | Observed result |
+| --- | --- |
+| Full suite with reviewed Docker image | **170 passed**, zero skipped, 30.96 seconds |
+| Final RO-Crate malformed-input hardening | Nine targeted cases passed, including three additional cases after the full-suite run |
+| Real Docker subset | 14 cases included: isolation, failures, quota, recovery, offline build, Python/shell and Iris |
+| Incorrect hash against an already installed dependency | Rejected; forced reinstall preserves hash verification |
+| Final offline-build/cleanup regression | Passed separately after adding forced intermediate cleanup |
+| Binary dependency resolution | Actual PyPI download of six 1.17.0; exact hashes registered; offline image imported the expected version |
+| Locked setup | `uv sync --frozen --extra dev` passed |
+| Lint/format | Passed; all Python files formatted |
+| Documentation | Local links, six mirrored Mermaid sources and all 29 CLI commands checked |
+| Wheel/source build | Both candidate distributions built |
+| Twine | Both candidate artifacts passed strict metadata/readme checks |
+| Distribution inventory | Version, required modules/docs/data and wheel-source bytes checked |
+| Independent wheel install | Complete CLI workflow passed from site-packages outside editable source |
+| Independent source install | API, export/import, catalog and validation passed in another fresh virtualenv |
+| Zenodo integration | Offline protocol tests passed, including retries, unknown creation, checksum mismatch, foreign links and publication reconciliation |
+| Public PyPI name lookup | HTTP 404 observed; name ownership/trusted publishing remains unverified |
+
+The independent wheel acceptance resolved and registered a dependency, built its
+image offline, ran the attributed Iris analysis, checked eight quantities and exact
+sample count, rendered HTML, exported/published/searched/fetched/cited a package,
+prepared a local Zenodo bundle, exported schemas and converted an external RO-Crate.
+Its installed module path was in a separate virtualenv. The accepted package's
+identity is recorded in the local acceptance artifacts, not invented as a DOI.
+
+A real runner process was killed abruptly; its saved run ID/label allowed explicit,
+idempotent recovery without deleting unrelated containers. Real output exhaustion
+returned ENOSPC at the configured tmpfs quota. Source dataset bytes are pinned and
+preserved across checkout platforms through `.gitattributes`.
+
+The local acceptance scripts do not create a public deposit. The actual inspected
+cloud runtime had no Zenodo or PyPI token; external trusted-publisher configuration
+was not verified.
+Configuration requirements were saved, but a saved draft is not an injected value
+or an applied network policy. Live Zenodo/DOI publication, PyPI distribution,
+remote OS/Python CI outcomes and independent-user/scientific/security acceptance
+remain outstanding. See the [launch checklist](launch-checklist.md) and
+[independent pilot protocol](pilot-protocol.md).
+
+The candidate tag/publication is verified separately after the Git push. This report
+records checks before publication and does not claim a GitHub Release page, PyPI
+upload, DOI or restored-task validation. Stable 1.0 acceptance remains blocked by
+the concrete external gates; the candidate is labelled accordingly.
+
+## Historical checks
+
 ## v0.2.0.dev0 development checks
 
 The new reproduction workflow was validated on Linux/Python 3.12.14 with local

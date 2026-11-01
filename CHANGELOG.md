@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.0rc1 — candidate (not final acceptance)
+
+- Resolve binary Python dependencies into registered exact hash locks and wheelhouses;
+  build/reuse offline environments and combine build with explicit reproduction.
+- Enforce real tmpfs output quotas without writable host mounts; bound safe tar
+  collection and recover labelled runs after abrupt runner termination.
+- Add quantity units, justified tolerances and bounded difference diagnostics.
+- Add attributed historical Iris measurements and independent numerical references.
+- Add recipe assistance, runtime diagnostics and standalone HTML reports.
+- Add immutable research catalog revisions, metadata search, verified downloads,
+  citations and a read-only HTTP interface.
+- Add local deposit bundles and resumable, explicitly published Zenodo deposits.
+- Add explicit local RO-Crate conversion, published JSON schemas and supported API.
+- Prepare verified distributions and an OIDC PyPI release workflow; external
+  scientific/usability/security review, remote CI and live publication remain gates.
+
 ## 0.2.0.dev0 — 2026-11-01 (pre-release)
 
 - Add validated reproduction recipes and CLI `plan`, `reproduce` and `compare` commands.

@@ -171,3 +171,198 @@ def test_non_utf8_analysis_logs(execution_study, tmp_path):
     result = reproduce(root, recipe(reference, script), tmp_path / "run", allow_execution=True)
     assert result["status"] == "PASS"
     assert "\ufffd" in (tmp_path / "run/stdout.txt").read_text(encoding="utf-8")
+
+
+def test_output_filesystem_has_a_real_quota(execution_study, tmp_path):
+    root, reference = execution_study
+    script = """
+from pathlib import Path
+large=Path('/output/large.bin')
+try:
+    large.write_bytes(b'x'*(2*1024*1024))
+except OSError as error:
+    assert error.errno == 28, error
+    print('quota enforced')
+else:
+    raise AssertionError('No output quota')
+large.unlink(missing_ok=True)
+Path('/output/result.json').write_text('{"value": 4}')
+"""
+    result = reproduce(
+        root, recipe(reference, script, output_mb=1), tmp_path / "run", allow_execution=True
+    )
+    assert result["status"] == "PASS"
+    assert result["output_quota_mb"] == 1
+    assert "quota enforced" in (tmp_path / "run/stdout.txt").read_text()
+
+
+def test_recovery_cancels_only_the_matching_label(tmp_path):
+    from uuid import uuid4
+
+    from openrepro.experiments import json_bytes
+    from openrepro.reproduction import recover_run
+
+    run_id = uuid4().hex
+    name = "openrepro-" + run_id
+    staging = tmp_path / "interrupted"
+    staging.mkdir()
+    (staging / "journal.json").write_bytes(json_bytes({"run_id": run_id, "state": "running"}))
+    try:
+        _docker(
+            "create",
+            "--name",
+            name,
+            "--label",
+            "org.openrepro.run=" + run_id,
+            "--network=none",
+            "--entrypoint=/bin/sh",
+            os.environ["OPENREPRO_TEST_IMAGE"],
+            "-c",
+            "exec sleep infinity",
+        )
+        _docker("start", name)
+        assert recover_run(staging)["container_removed"]
+        assert not recover_run(staging)["container_removed"]
+        assert json.loads((staging / "journal.json").read_text())["state"] == "cancelled"
+    finally:
+        _docker("rm", "--force", name, check=False)
+
+
+def test_offline_locked_environment_build(execution_study, tmp_path):
+    import zipfile
+
+    from openrepro.environment import EnvironmentSpec, build_environment
+    from openrepro.experiments import digest
+
+    root, reference = execution_study
+    wheel = tmp_path / "openrepro_calibration-1.0-py3-none-any.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("openrepro_calibration/__init__.py", "value = 4.0\n")
+        archive.writestr(
+            "openrepro_calibration-1.0.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: openrepro-calibration\nVersion: 1.0\n",
+        )
+        archive.writestr(
+            "openrepro_calibration-1.0.dist-info/WHEEL",
+            "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        )
+        archive.writestr("openrepro_calibration-1.0.dist-info/RECORD", "")
+    registered_wheel = add_file(root, wheel, Role.supplementary)
+    lock = tmp_path / "requirements.lock"
+    lock.write_text("openrepro-calibration==1.0 --hash=sha256:" + digest(wheel) + "\n")
+    registered_lock = add_file(root, lock, Role.supplementary)
+    spec = EnvironmentSpec(
+        base_image=os.environ["OPENREPRO_TEST_IMAGE"],
+        requirements=registered_lock.path,
+        wheels=[registered_wheel.path],
+    )
+    built = build_environment(root, spec, allow_build=True)
+    assert built["image"].startswith("sha256:")
+    assert build_environment(root, spec, allow_build=True)["cached"]
+    script = (
+        "import json,openrepro_calibration; from pathlib import Path; "
+        "Path('/output/result.json').write_text(json.dumps({'value':openrepro_calibration.value}))"
+    )
+    run_recipe = recipe(reference, script).model_copy(update={"image": built["image"]})
+    assert reproduce(root, run_recipe, tmp_path / "run", allow_execution=True)["status"] == "PASS"
+    bad_lock = tmp_path / "bad.lock"
+    bad_lock.write_text("openrepro-calibration==1.0 --hash=sha256:" + "0" * 64 + "\n")
+    bad_entry = add_file(root, bad_lock, Role.supplementary)
+    bad_spec = EnvironmentSpec(
+        base_image=built["image"], requirements=bad_entry.path, wheels=[registered_wheel.path]
+    )
+    with pytest.raises(OpenReproError):
+        build_environment(root, bad_spec, allow_build=True)
+
+
+def test_iris_real_data_reproduction(tmp_path):
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    checkout = Path(__file__).resolve().parents[1]
+    destination = tmp_path / "iris"
+    subprocess.run(
+        [
+            sys.executable,
+            str(checkout / "examples/iris/generate.py"),
+            "--output",
+            str(destination),
+            "--image",
+            os.environ["OPENREPRO_TEST_IMAGE"],
+        ],
+        check=True,
+    )
+    spec = Recipe.model_validate_json((destination / "recipe.json").read_text())
+    result = reproduce(destination / "experiment", spec, tmp_path / "run", allow_execution=True)
+    assert result["status"] == "PASS"
+    assert result["comparison"]["comparisons"][0]["units"]["/sepal_length_mean"] == "cm"
+    values = json.loads((tmp_path / "run/outputs/summary.json").read_text())
+    assert values["sepal_length_mean"]["value"] == pytest.approx(5.843333333333334)
+    assert (tmp_path / "run/outputs/count.txt").read_text() == "150\n"
+
+
+def test_second_analysis_language_is_supported(execution_study, tmp_path):
+    root, reference = execution_study
+    script = tmp_path / "analyze.sh"
+    script.write_text("printf '{\"value\":4}' > /output/result.json\n")
+    entry = add_file(root, script, Role.script)
+    spec = recipe(reference, "unused").model_copy(update={"command": ["/bin/sh", entry.path]})
+    assert reproduce(root, spec, tmp_path / "shell-run", allow_execution=True)["status"] == "PASS"
+
+
+def test_abrupt_runner_termination_can_be_recovered(execution_study, tmp_path):
+    import signal
+    import subprocess
+    import sys
+    import time
+
+    from openrepro.reproduction import recover_run
+
+    root, reference = execution_study
+    spec = tmp_path / "recipe.json"
+    spec.write_text(recipe(reference, "import time; time.sleep(30)").model_dump_json())
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            "-m",
+            "openrepro.cli",
+            "reproduce",
+            str(root),
+            "--spec",
+            str(spec),
+            "--output",
+            str(tmp_path / "run"),
+            "--allow-execution",
+            "--json",
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    journal_dir = None
+    try:
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            candidates = list(tmp_path.glob(".openrepro-run-*"))
+            if candidates and (candidates[0] / "journal.json").exists():
+                state = json.loads((candidates[0] / "journal.json").read_text())
+                name = "openrepro-" + state["run_id"]
+                running = _docker("inspect", "--format", "{{.State.Running}}", name, check=False)
+                if running.returncode == 0 and running.stdout.strip() == "true":
+                    journal_dir = candidates[0]
+                    break
+            time.sleep(0.1)
+        assert journal_dir is not None, "Runner did not create a live recoverable execution"
+        os.killpg(process.pid, signal.SIGKILL)
+        process.wait(timeout=5)
+        assert recover_run(journal_dir)["container_removed"]
+        assert (journal_dir / "journal.json").exists()
+        assert not (tmp_path / "run").exists()
+    finally:
+        if process.poll() is None:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait(timeout=5)
+        for directory in tmp_path.glob(".openrepro-run-*"):
+            if (directory / "journal.json").exists():
+                recover_run(directory)

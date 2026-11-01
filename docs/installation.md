@@ -22,3 +22,10 @@ No network access is required after dependencies are installed. No service or
 credential is needed for local CLI/MCP functionality. Package registry downloads
 use normal TLS verification. An editable install links source changes immediately.
 For a noneditable install, run `python -m pip install .`.
+
+
+The candidate's optional `environment` extra supplies pip for binary requirement
+resolution; `dev` includes it plus distribution checks. Execution/build requires
+Linux, local Docker with enforced limits, and reviewed immutable images containing
+`/bin/sh`, `sleep` and `tar`. Package management, comparison and catalogs do not need
+Docker. See [environment setup](environments.md) and [release acceptance](launch-checklist.md).

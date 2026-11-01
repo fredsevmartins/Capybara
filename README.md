@@ -4,131 +4,122 @@
 
 **Share Experiments. Reproduce Science.**
 
-OpenRepro packages scientific experiment files with a versioned manifest,
-RO-Crate 1.1 metadata and SHA-256 checksums. Its CLI and local MCP server share
-one offline Python core. Package management needs no database, Docker, API key or
-AI provider. The v0.2 development workflow adds optional Linux/Docker reproduction.
+OpenRepro packages protocols, data, analysis and provenance into portable `.orepro`
+archives. It validates integrity, runs explicitly reviewed analysis in Linux Docker,
+compares outputs, and exchanges immutable package revisions through a searchable
+catalog or Zenodo.
 
-Researchers need to exchange protocols, data, analysis and provenance together.
-An `.orepro` file is an ordinary ZIP archive that preserves these files and checks
-whether their contents still match the recorded inventory.
+This checkout is **1.0.0rc1, a release candidate**. Local engineering checks do not
+establish independent scientific validation, public deployment or a published DOI.
+See the [launch checklist](docs/launch-checklist.md) for the remaining release gates.
 
-```mermaid
-flowchart LR
-    A[Researcher] --> B[CLI or local MCP]
-    B --> C[OpenRepro core]
-    C --> D[ZIP research package]
-    D --> E[Other researcher]
-```
+## Install
 
-## Installation
-
-Python 3.11 or newer:
+Python 3.11+; package management works on Linux, macOS and Windows:
 
 ```bash
-git clone https://github.com/fredsevmartins/OpenRepro.git
-cd OpenRepro
 python -m venv .venv
 # Unix: source .venv/bin/activate
-# Windows PowerShell: .venv\Scripts\Activate.ps1
+# Windows: .venv\Scripts\Activate.ps1
 python -m pip install -e '.[dev]'
 ```
 
-For a locked development installation with uv, run `uv sync --frozen --extra dev`.
+For the locked development environment, use `uv sync --frozen --extra dev`.
+`.[environment]` installs the optional Python dependency resolver. Core package
+management needs no database service, API key, Docker or AI provider. Execution
+and environment construction require Linux and a trusted local Docker daemon.
+PyPI availability is a separate publication gate; use this checkout until confirmed.
 
-The project has not been published to PyPI. For core use, omit `[dev]`.
+## Create and exchange a package
 
-## Quick start
-
-Run from the checkout with the environment activated. Use new destination paths:
-
-```bash
-openrepro init experiments/demo --title 'Synthetic study' --description 'Training only' --author 'Researcher'
-openrepro add experiments/demo README.md --role supplementary
-openrepro inspect experiments/demo --json
-openrepro validate experiments/demo --json
-openrepro export experiments/demo demo.orepro
-openrepro import demo.orepro experiments/received
-```
-
-Validation returns `WARN` when reproduction instructions are absent, and `FAIL`
-for structural or checksum errors. A passing integrity check **does not establish
-scientific correctness**. Importing never executes scripts. Explicit reproduction is a separate opt-in command.
-
-## Interfaces and examples
-
-The [CLI reference](docs/cli-reference.md) covers all commands. The
-[Python API](docs/python-api.md) supports richer metadata. The
-[MCP guide](docs/mcp-integration.md) explains local stdio configuration and the
-current limits of ChatGPT connectivity.
+Use new destination paths:
 
 ```bash
-python examples/generate.py --output examples/generated
-openrepro validate examples/generated/pharmacokinetics --json
+openrepro init experiments/study --title 'Study' --description 'Research description' --author 'Researcher' --reproduction 'Review protocol and analysis'
+openrepro add experiments/study observations.csv --role raw
+openrepro inspect experiments/study --json
+openrepro validate experiments/study --json
+openrepro export experiments/study study.orepro
+openrepro import study.orepro experiments/received
 ```
 
-Three synthetic examples cover IV bolus pharmacokinetics, dissolution and an
-independent two-group comparison. Each contains data, protocol, analysis source,
-figure, calculated table and an exported package. See [expected results](docs/examples.md).
+`validate` reports PASS, WARN or FAIL. Integrity does not establish authenticity or
+scientific correctness. Importing, planning, catalog search and MCP management never
+execute imported scripts. Explicit execution uses a separate reviewed workflow.
 
-## Editing experiments
+## Reproduce analysis
 
-Use `openrepro update PATH --metadata changes.json` to apply descriptive metadata
-changes, `openrepro replace PATH REGISTERED_FILE SOURCE` for explicit payload
-replacement, and `openrepro remove PATH REGISTERED_FILE` to remove a payload.
-Edits record provenance and restore affected files after handled write failures.
-Dependent results must be removed before replacing their inputs. See
-[editing and recovery](docs/editing.md) for examples and limits.
+The dependency-free demonstration packages a real analysis script and synthetic CSV:
 
-## Reproduction (v0.2 development)
+```bash
+docker --host=unix:///var/run/docker.sock pull python:3.12-slim
+REPRO_IMAGE_ID=$(docker --host=unix:///var/run/docker.sock image inspect --format '{{.Id}}' python:3.12-slim)
+python examples/reproduction/generate.py --output experiments/demo --image "$REPRO_IMAGE_ID"
+openrepro plan experiments/demo/experiment --spec experiments/demo/recipe.json --json
+openrepro reproduce experiments/demo/experiment --spec experiments/demo/recipe.json --output experiments/demo-run --allow-execution --json
+openrepro report experiments/demo-run --output experiments/demo-report.html
+```
 
-`openrepro plan PATH --spec recipe.json --json` validates a reviewed execution
-recipe without running it. `openrepro reproduce PATH --spec recipe.json --output
-NEW_RUN --allow-execution --json` executes in a local Linux Docker container with
-no network, read-only experiment inputs and resource limits. Results and the run
-report stay outside the experiment. `openrepro compare` also checks results without
-executing code. See the [complete reproduction workflow](docs/execution.md) and
-[synthetic example generator](examples/reproduction/generate.py).
+Execution uses immutable image IDs, no network, read-only inputs, a non-root user,
+CPU/memory/process limits and a real tmpfs output quota. No writable host directory
+is mounted. Reports retain image and dependency identities, exit status, numerical
+comparisons and tolerance justifications. Containers share the host kernel; use a
+separate VM for hostile workloads. See [execution](docs/execution.md).
 
-## Package format and integrity
+[Environment preparation](docs/environments.md) resolves binary dependencies,
+registers an exact SHA-256 lock and builds offline. `recipe` helps select scripts
+and references; `doctor` checks prerequisites; `recover` cancels interrupted runs.
+The [Iris example](examples/iris/README.md) reproduces descriptive statistics from
+attributed historical observations, with units and independent NumPy references.
 
-Packages contain `manifest.json`, `ro-crate-metadata.json`, `README.md`,
-`provenance/provenance.json`, and registered files beneath `protocol/`, `data/`,
-`analysis/`, `results/` or `supplementary/`. See the [format specification](docs/package-format.md).
-Exports use sorted entries and normalized timestamps and permissions. Re-exporting
-an unchanged workspace is byte-identical; separately created experiments have
-new identifiers and timestamps.
+## Publish and discover research
 
-Imports reject unsafe paths, symlinks, case collisions, duplicate ZIP entries,
-unsupported compression, inventory differences and resource-limit violations.
-Checksums detect changes, but are not signatures or proof of authorship.
+```bash
+openrepro publish study.orepro --catalog exchange
+openrepro search exchange --query 'Study' --json
+# Use the returned SHA-256 for fetch and cite:
+openrepro fetch exchange PACKAGE_SHA256 experiments/retrieved
+openrepro cite exchange PACKAGE_SHA256 --json
+openrepro deposit-bundle study.orepro --output deposit
+```
 
-## Development
+The catalog keeps immutable package bytes, revision histories and content identifiers.
+An optional read-only HTTP service supports discovery and verified downloads.
+Zenodo integration creates resumable drafts and publishes only with explicit
+`--publish`; credentials belong in secure environment settings. A local content URN
+is not a DOI. See [exchange](docs/exchange.md) and [Zenodo](docs/zenodo.md).
+
+## Edit and integrate
+
+`update`, `replace` and `remove` preserve identity, record provenance and restore
+affected files after handled failures. Dependent outputs must be removed before
+revising their inputs. See [editing and recovery](docs/editing.md).
+
+The [Python API](docs/python-api.md) exposes supported functions through
+`openrepro.api`; the local [MCP server](docs/mcp-integration.md) provides eleven
+management tools without execution. Explicit [RO-Crate conversion](docs/interoperability.md)
+accepts local files, preserves the original graph and never resolves remote contexts.
+Published [JSON schemas](docs/schemas/README.md) describe format versions separately
+from the software version.
+
+## Development and release
 
 ```bash
 python -m pytest -q
 ruff check .
 ruff format --check .
-python -m build
 python scripts/check_docs.py
+python -m build --no-isolation
+python -m twine check --strict dist/*
+python scripts/check_release.py
 ```
 
-CI runs tests, lint, build and examples on Python 3.11–3.13 across Linux, macOS
-and Windows. CI results must be checked on GitHub; a local Linux run does not
-establish cross-platform success.
+Docker tests require `OPENREPRO_TEST_IMAGE` set to a reviewed local Python image ID;
+without it they are skipped. CI defines nine portable OS/Python combinations and
+a separate real-Docker job. Remote CI results must be checked independently.
+The manual release workflow verifies tagged artifacts before optional PyPI trusted
+publication. See [verification](docs/verification.md), [compatibility](docs/compatibility.md)
+and the [documentation index](docs/introduction.md).
 
-## Documentation and roadmap
-
-Start at the [documentation index](docs/introduction.md). Mermaid diagram sources
-are in [docs/diagrams](docs/diagrams).
-
-- v0.1: workspaces, file inventory, metadata, ZIP exchange, validation, CLI, MCP,
-  synthetic examples and tests.
-- v0.2 (in development): opt-in Docker execution, environment identity/dependency-file
-  recording and exact or numeric JSON comparison. Automatic environment building and
-  richer scientific workflows remain future work.
-- v0.3 (planned): research exchange, persistent identifiers and discovery.
-- v1.0 (planned): broader RO-Crate interoperability and multiple analysis languages.
-
-See [contributing](CONTRIBUTING.md), [security](SECURITY.md), the [MIT license](LICENSE),
-and [citation metadata](CITATION.cff). No DOI has been assigned.
+MIT-licensed software. Research payloads retain their declared licenses. See
+[contributing](CONTRIBUTING.md), [security](SECURITY.md) and [citation metadata](CITATION.cff).

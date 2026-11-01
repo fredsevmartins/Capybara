@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import sqlite3
 from pathlib import Path
 
 from . import __version__
@@ -39,6 +40,21 @@ def parser() -> argparse.ArgumentParser:
         "plan",
         "reproduce",
         "compare",
+        "environment-lock",
+        "environment-build",
+        "recipe",
+        "doctor",
+        "report",
+        "recover",
+        "publish",
+        "search",
+        "fetch",
+        "cite",
+        "serve",
+        "deposit-bundle",
+        "zenodo-deposit",
+        "convert-crate",
+        "schema",
     ):
         s = sub.add_parser(command, help=f"{command.capitalize()} an experiment or package")
         s.add_argument("--json", action="store_true", help="Print structured JSON")
@@ -54,13 +70,17 @@ def parser() -> argparse.ArgumentParser:
         elif command == "import":
             s.add_argument("package", type=Path)
             s.add_argument("destination", type=Path)
-        elif command != "version":
+        elif command not in ("version", "schema"):
             s.add_argument("path", type=Path)
         if command in ("plan", "reproduce", "compare"):
             s.add_argument(
                 "--spec", required=True, type=Path, help="Reviewed reproduction recipe JSON"
             )
         if command == "reproduce":
+            s.add_argument(
+                "--environment", type=Path, help="Build from a registered environment lock"
+            )
+            s.add_argument("--allow-build", action="store_true")
             s.add_argument("--output", required=True, type=Path, help="New external run directory")
             s.add_argument(
                 "--allow-execution", action="store_true", help="Explicitly execute reviewed code"
@@ -82,6 +102,49 @@ def parser() -> argparse.ArgumentParser:
             s.add_argument("--role", choices=[r.value for r in Role], required=True)
             s.add_argument("--description", default="")
             s.add_argument("--derived-from", action="append", default=[])
+        if command == "schema":
+            s.add_argument("--kind", choices=("manifest", "recipe", "environment"), required=True)
+            s.add_argument("--output", type=Path, required=True)
+        if command == "environment-lock":
+            s.add_argument("--requirements", required=True, help="Registered requirements input")
+            s.add_argument("--base-image", required=True, help="Reviewed immutable base image ID")
+            s.add_argument("--output", required=True, type=Path)
+            s.add_argument("--allow-download", action="store_true")
+        if command == "environment-build":
+            s.add_argument("--spec", required=True, type=Path)
+            s.add_argument("--allow-build", action="store_true")
+        if command == "recipe":
+            s.add_argument("--image", required=True)
+            s.add_argument("--output", required=True, type=Path)
+            s.add_argument("--script")
+            s.add_argument("--interpreter", default="python")
+            s.add_argument("--reference")
+            s.add_argument("--result-name")
+        if command == "doctor":
+            s.add_argument("--docker", action="store_true")
+        if command in ("report", "deposit-bundle", "convert-crate"):
+            s.add_argument("--output", required=True, type=Path)
+        if command == "convert-crate":
+            s.add_argument("--license")
+            s.add_argument("--author", action="append")
+        if command == "publish":
+            s.add_argument("--catalog", required=True, type=Path)
+        if command == "search":
+            s.add_argument("--query", default="")
+            s.add_argument("--limit", type=int, default=20)
+            s.add_argument("--experiment")
+        if command in ("fetch", "cite"):
+            s.add_argument("checksum")
+        if command == "fetch":
+            s.add_argument("destination", type=Path)
+        if command == "serve":
+            s.add_argument("--host", default="127.0.0.1")
+            s.add_argument("--port", type=int, default=8080)
+        if command == "zenodo-deposit":
+            s.add_argument(
+                "--publish", action="store_true", help="Publicly publish the reviewed deposit"
+            )
+            s.add_argument("--deposition-id", type=int)
         if command == "export":
             s.add_argument("output", type=Path)
     return p
@@ -102,6 +165,95 @@ def main() -> None:
                 license=args.license,
                 reproduction=args.reproduction,
             ).model_dump(mode="json")
+        elif c == "schema":
+            from .environment import EnvironmentSpec
+            from .experiments import json_bytes
+            from .models import Manifest
+            from .reproduction import Recipe
+
+            models = {"manifest": Manifest, "recipe": Recipe, "environment": EnvironmentSpec}
+            with args.output.open("xb") as stream:
+                stream.write(json_bytes(models[args.kind].model_json_schema()))
+            result = {"schema": str(args.output), "kind": args.kind}
+        elif c in ("environment-lock", "environment-build"):
+            from .environment import EnvironmentSpec, build_environment, lock_environment
+            from .experiments import load_json
+
+            if c == "environment-lock":
+                result = lock_environment(
+                    args.path,
+                    args.requirements,
+                    args.base_image,
+                    args.output,
+                    allow_download=args.allow_download,
+                )
+            else:
+                spec = EnvironmentSpec.model_validate(load_json(args.spec))
+                result = build_environment(args.path, spec, allow_build=args.allow_build)
+        elif c in ("recipe", "doctor", "report"):
+            from .experience import create_recipe, doctor, render_report
+
+            if c == "recipe":
+                result = create_recipe(
+                    args.path,
+                    args.image,
+                    args.output,
+                    script=args.script,
+                    reference=args.reference,
+                    output=args.result_name,
+                    interpreter=args.interpreter,
+                )
+            elif c == "doctor":
+                result = doctor(args.path, docker=args.docker)
+            else:
+                result = render_report(args.path, args.output)
+        elif c == "recover":
+            from .reproduction import recover_run
+
+            result = recover_run(args.path)
+        elif c in ("publish", "search", "fetch", "cite", "serve"):
+            from .catalog import (
+                catalog_server,
+                citation,
+                fetch_package,
+                publish_package,
+                search_catalog,
+            )
+
+            if c == "publish":
+                result = publish_package(args.path, args.catalog)
+            elif c == "search":
+                result = {
+                    "packages": search_catalog(
+                        args.path, args.query, limit=args.limit, experiment=args.experiment
+                    )
+                }
+            elif c == "fetch":
+                result = fetch_package(args.path, args.checksum, args.destination)
+            elif c == "cite":
+                result = citation(args.path, args.checksum)
+            else:
+                with catalog_server(args.path, args.host, args.port) as server:
+                    try:
+                        server.serve_forever()
+                    except KeyboardInterrupt:
+                        return
+        elif c in ("deposit-bundle", "zenodo-deposit"):
+            from .zenodo import deposit_bundle, zenodo_deposit
+
+            result = (
+                deposit_bundle(args.path, args.output)
+                if c == "deposit-bundle"
+                else zenodo_deposit(
+                    args.path, publish=args.publish, deposition_id=args.deposition_id
+                )
+            )
+        elif c == "convert-crate":
+            from .interoperability import convert_crate
+
+            result = convert_crate(
+                args.path, args.output, license=args.license, authors=args.author
+            )
         elif c in ("plan", "reproduce", "compare"):
             from .experiments import load_json
             from .reproduction import Recipe, compare_results, reproduce, reproduction_plan
@@ -112,9 +264,33 @@ def main() -> None:
             elif c == "compare":
                 result = compare_results(args.path, args.outputs, recipe.comparisons)
             else:
+                environment = None
+                if not args.allow_execution:
+                    from .models import OpenReproError
+
+                    raise OpenReproError("Review the recipe and explicitly allow execution")
+                if args.environment:
+                    from .environment import EnvironmentSpec, build_environment
+                    from .reproduction import Recipe
+
+                    environment_spec = EnvironmentSpec.model_validate(load_json(args.environment))
+                    environment = build_environment(
+                        args.path, environment_spec, allow_build=args.allow_build
+                    )
+                    values = recipe.model_dump()
+                    values["image"] = environment["image"]
+                    values["dependency_files"] = sorted(
+                        set(recipe.dependency_files) | set(environment["inputs"])
+                    )
+                    recipe = Recipe.model_validate(values)
                 result = reproduce(
                     args.path, recipe, args.output, allow_execution=args.allow_execution
                 )
+                if environment is not None:
+                    from .experiments import atomic_write, json_bytes
+
+                    result["environment_build"] = environment
+                    atomic_write(args.output / "report.json", json_bytes(result))
         elif c == "update":
             from .experiments import load_json
 
@@ -147,9 +323,12 @@ def main() -> None:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:
             print(human(result))
-        if c in ("validate", "compare", "reproduce") and result["status"] == "FAIL":
+        if (
+            c in ("validate", "compare", "reproduce", "doctor", "report")
+            and result["status"] == "FAIL"
+        ):
             raise SystemExit(1)
-    except (ValueError, OSError) as exc:
+    except (ValueError, OSError, sqlite3.Error, RecursionError) as exc:
         if args.json:
             print(json.dumps({"error": str(exc)}))
         else:

@@ -1,5 +1,6 @@
 """Check local documentation links, mirrored Mermaid sources and CLI usage."""
 
+import argparse
 import re
 from pathlib import Path
 
@@ -16,22 +17,12 @@ for path in [root / "README.md", *sorted((root / "docs").rglob("*.md"))]:
 for path in sorted((root / "docs/diagrams").glob("*.mmd")):
     source = path.read_text().strip()
     assert f"```mermaid\n{source}\n```" in path.with_suffix(".md").read_text()
-commands = (
-    "init",
-    "add",
-    "list",
-    "inspect",
-    "validate",
-    "export",
-    "import",
-    "version",
-    "update",
-    "remove",
-    "replace",
-    "plan",
-    "reproduce",
-    "compare",
+commands = next(
+    action.choices for action in parser()._actions if isinstance(action, argparse._SubParsersAction)
 )
+reference = (root / "docs/cli-reference.md").read_text(encoding="utf-8")
+
 for command in commands:
     assert command in parser().format_help()
+    assert f"`{command}" in reference, ("Undocumented CLI command", command)
 print(f"Checked {count} local links, six mirrored Mermaid sources and {len(commands)} CLI commands")

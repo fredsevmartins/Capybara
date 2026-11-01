@@ -1,20 +1,26 @@
-# Reproducibility
+# Reproducibility and interpretation
 
-An unchanged workspace exports byte-identically: sorted POSIX file names, ZIP_STORED,
-normalized timestamps and permissions. New experiments have fresh UUIDs and timestamps,
-so independently generated packages need not be identical. Example numeric values are
-deterministic in the tested Python/SciPy environment; PNG bytes can vary by library,
-font and platform. The committed `uv.lock` locks the development dependencies. Use
-`uv sync --frozen --extra dev` to reproduce them. Plain pip installation uses
-compatible ranges instead; operating system and fonts still affect rendered figures.
+An unchanged workspace exports byte-identically: sorted POSIX names, stored ZIP
+entries, normalized timestamps and permissions. Newly created experiments have new
+UUIDs/timestamps; independently generated packages need not have identical bytes.
 
-`analysis/scripts/generate.py` in each example rebuilds all demonstrations when run
-manually with the `dev` extra installed and a fresh `--output` directory. It requires
-an installed OpenRepro package. The v0.1 release preserves instructions and files without executing them. The v0.2
-development CLI adds an explicit [Docker reproduction workflow](execution.md),
-recording image identity, architecture, recipe and dependency-file hashes, then
-comparing declared results. It does not infer or install dependencies automatically.
-The original three demonstration generators still use their manual workflow; a
-separate dependency-free statistics example exercises the Docker runner.
+The committed `uv.lock` fixes the development dependencies. Use
+`uv sync --frozen --extra dev`. Plain pip installation uses compatible ranges.
+Operating-system libraries, CPU architecture and fonts can still affect analyses
+and rendered figures. Offline environment builds use immutable base IDs and hashed
+binary wheels; they are rebuildable from selected inputs, without promising identical
+Docker layer bytes across build engines.
+
+[Execution](execution.md) records image identity, recipes, input hashes and selected
+dependency hashes and compares outputs. It does not infer scientific validity.
+[Environment preparation](environments.md) resolves explicit Python requirements;
+it does not discover every import or system dependency. Numeric comparison needs
+justified tolerances and explicit units. See the [attributed Iris case](../examples/iris/README.md)
+and the three original synthetic examples.
+
+Sharing requires preserving complete data, protocols, methods, dependency identities,
+licenses and provenance. A successful replay is useful evidence, but independent
+researchers must assess the method, source data and expected outcomes. Source hashes
+and result equality alone do not prove authorship, correctness or new findings.
 
 [Reproducibility concept diagram](diagrams/reproducibility.md)

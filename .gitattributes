@@ -1,0 +1,4 @@
+# Preserve scientific payload bytes on every checkout platform.
+examples/iris/iris.csv -text
+*.orepro binary
+*.whl binary

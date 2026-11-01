@@ -69,3 +69,19 @@ comparison = compare_results(root, Path("runs/new-run/outputs"), recipe.comparis
 The runner requires Linux/local Docker, a preloaded immutable image ID and a new
 external destination. `compare_results` needs neither Docker nor execution opt-in.
 See [execution](execution.md) for the report schema, defaults and limitations.
+
+## Supported convenience imports
+
+`from openrepro import api` exposes the supported surface listed in `api.__all__`.
+Existing direct module imports remain compatible. The candidate adds:
+
+- `EnvironmentSpec`, `environment_plan`, `lock_environment`, `build_environment`:
+  validated inputs, explicit downloads and offline builds. See [environments](environments.md).
+- `create_recipe`, `doctor`, `render_report`: non-executing workflow assistance.
+- `recover_run`: idempotent cancellation of the matching labelled interrupted run.
+- `publish_package`, `search_catalog`, `fetch_package`, `citation`: immutable local exchange.
+- `deposit_bundle`, `zenodo_deposit`: local metadata preparation and resumable Zenodo drafts.
+  `publish=True` is explicit public publication; credentials are never function arguments.
+- `convert_crate`: explicit local RO-Crate conversion preserving the original graph.
+
+See [compatibility](compatibility.md) and [launch acceptance](launch-checklist.md).

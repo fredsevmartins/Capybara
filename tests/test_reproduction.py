@@ -194,3 +194,29 @@ def test_missing_isolation_support_fails_closed(comparison_study, tmp_path, monk
         reproduce(root, spec, tmp_path / "run", allow_execution=True)
     assert len(calls) == 1
     assert not (tmp_path / "run").exists()
+
+
+def test_quantity_units_and_justified_tolerances(tmp_path):
+    root = tmp_path / "study"
+    create_experiment(root, "Units", "D", ["A"])
+    reference = tmp_path / "reference.json"
+    reference.write_text('{"length":{"value":5.84,"unit":"cm"}}')
+    entry = add_file(root, reference, Role.table)
+    outputs = tmp_path / "outputs"
+    outputs.mkdir()
+    comparison = Comparison(
+        reference=entry.path,
+        output="result.json",
+        mode="quantities",
+        units={"/length": "cm"},
+        justification="Fixed input and double precision",
+    )
+    (outputs / "result.json").write_text('{"length":{"value":5.8400000001,"unit":"cm"}}')
+    assert compare_results(root, outputs, [comparison])["status"] == "PASS"
+    (outputs / "result.json").write_text('{"length":{"value":5.84,"unit":"mm"}}')
+    result = compare_results(root, outputs, [comparison])
+    assert result["status"] == "FAIL"
+    assert result["comparisons"][0]["unit_error"]
+    assert result["comparisons"][0]["differences"][0]["pointer"] == "/length/unit"
+    with pytest.raises(ValueError):
+        Comparison(reference=entry.path, output="x.json", mode="quantities")

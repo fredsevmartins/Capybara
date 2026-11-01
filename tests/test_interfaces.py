@@ -30,7 +30,7 @@ def test_cli_workflow(tmp_path):
     package = tmp_path / "export.orepro"
     cli("export", root, package, "--json")
     cli("import", package, tmp_path / "imported", "--json")
-    assert cli("version", "--json")["version"] == "0.2.0.dev0"
+    assert cli("version", "--json")["version"] == "1.0.0rc1"
     (root / "README.md").write_text("tampered")
     assert cli("validate", root, "--json", expected=1)["status"] == "FAIL"
     cli("export", root, tmp_path / "bad.orepro", "--json", expected=2)

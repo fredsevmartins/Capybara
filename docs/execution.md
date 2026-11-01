@@ -1,151 +1,126 @@
-# Opt-in reproduction (v0.2 development)
+# Reviewed analysis execution
 
-This workflow executes reviewed analysis in a local Linux Docker container and
-compares declared output files with registered references. Import, validation,
-inspection, planning and comparison never execute analysis code. Execution is not
-exposed through MCP. Package schema 0.1 and existing `.orepro` files are unchanged.
+Execution is an explicit CLI/Python workflow. It is never triggered by package
+import or an MCP management tool. The native package schema remains 0.1.
 
-## Prerequisites and complete example
+## Requirements and complete example
 
-Use Linux with a trusted local Docker daemon at `/var/run/docker.sock`, Docker CLI
-on PATH and access to its socket. The runner explicitly uses that local socket,
-ignoring Docker host/context/TLS selectors. Remote daemons and Docker Desktop on
-macOS/Windows are not supported by this first implementation. Package management,
-planning and comparison remain cross-platform.
+Use Linux, the Docker CLI and a trusted local daemon at `/var/run/docker.sock`.
+Host/context/TLS selectors cannot redirect the runner to a remote daemon. The
+daemon must support memory/swap, CPU/process limits and default seccomp. Missing
+capabilities cause refusal; no host-execution fallback is provided. Images must
+already be local and identified by a complete immutable SHA-256 image ID.
 
-The daemon must support memory/swap, CPU and PID limits and default seccomp.
-Missing prerequisites cause an error; there is no host-process execution fallback.
-Prepare and review the image separately. The runner never pulls or builds images.
-In managed cloud environments preserve the configured proxy, CA trust and registry
-authentication when pulling/building; never disable TLS verification.
-
-From an activated OpenRepro development checkout:
+Images need `/bin/sh`, `sleep`, `tar` and the selected analysis executable. Python
+and shell are covered by real tests; other reviewed language images can implement
+this runtime contract. Image healthchecks/entrypoints are overridden. Preparing
+images or downloading dependencies is separate from offline analysis.
 
 ```bash
 docker --host=unix:///var/run/docker.sock pull python:3.12-slim
 REPRO_IMAGE_ID=$(docker --host=unix:///var/run/docker.sock image inspect --format '{{.Id}}' python:3.12-slim)
-python examples/reproduction/generate.py --output experiments/repro-demo --image "$REPRO_IMAGE_ID"
-openrepro import experiments/repro-demo/experiment.orepro experiments/repro-received
-openrepro plan experiments/repro-received --spec experiments/repro-demo/recipe.json --json
-openrepro reproduce experiments/repro-received --spec experiments/repro-demo/recipe.json --output experiments/repro-run --allow-execution --json
-openrepro compare experiments/repro-received --spec experiments/repro-demo/recipe.json --outputs experiments/repro-run/outputs --json
+python examples/reproduction/generate.py --output experiments/demo --image "$REPRO_IMAGE_ID"
+openrepro plan experiments/demo/experiment --spec experiments/demo/recipe.json --json
+openrepro reproduce experiments/demo/experiment --spec experiments/demo/recipe.json --output runs/demo --allow-execution --json
+openrepro compare experiments/demo/experiment --spec experiments/demo/recipe.json --outputs runs/demo/outputs --json
+openrepro report runs/demo --output runs/demo.html
 ```
 
-Use new destination names. The example contains four synthetic observations, a
-registered standard-library Python script, a dependency declaration and reference
-statistics. It computes count=4, mean=2.5 and sample SD≈1.2909944487358056 from the
-packaged CSV. It does not require scientific Python packages in the image.
+Use new destinations; parent directories may be created as documented by each
+command. Review the actual image, scripts, command, references and tolerances.
+Pulling the example tag selects the current image, after which the recipe fixes
+its immutable ID. Record/preserve a registry digest or image archive for transport.
+See [environments](environments.md) for automatic binary resolution and offline build.
 
-Review image origin, script, command arguments, references and tolerances before
-passing `--allow-execution`. Pulling a tag in this example selects a current image;
-the generated recipe records the resolved immutable ID, not the mutable tag. The
-report also records repository digests when the image has them. On another machine
-pull the reviewed repository digest or load a verified image archive, confirm its
-ID, then use the recipe. An ID alone does not distribute an image.
+## Recipes
 
-## Recipe schema
+Recipe schema `0.2` contains `image`, an argument-array `command`, one or more
+`comparisons`, optional registered `dependency_files`, timeout, memory, CPU and
+output quota. `plan` validates these inputs without executing. Unknown fields,
+mutable tags, unsafe paths, duplicate output names and invalid limits fail.
+There is no implicit shell expansion; selecting a shell explicitly still requires
+code review and execution opt-in. A generated recipe is assistance, not approval.
 
-Recipes are separate JSON documents, schema `0.2`. `image` must be a complete local
-`sha256:` image ID (64 lowercase hex digits). A representative recipe is:
+A comparison declares a registered `reference`, relative `output` and mode:
 
-```json
-{
-  "schema_version": "0.2",
-  "image": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-  "command": ["python", "analysis/scripts/analyze.py"],
-  "dependency_files": ["supplementary/requirements.txt"],
-  "timeout_seconds": 60,
-  "memory_mb": 256,
-  "cpus": 1,
-  "comparisons": [
-    {
-      "reference": "results/tables/summary.json",
-      "output": "summary.json",
-      "mode": "json-numeric",
-      "relative_tolerance": 0.000001,
-      "absolute_tolerance": 0.000000001
-    }
-  ]
-}
-```
+- `exact`: compare file bytes through SHA-256.
+- `json-numeric`: compare nested JSON structures with numeric tolerances; other
+  values and object keys/array order must match. A missing tolerance justification
+  is recorded as a warning.
+- `quantities`: require declared units and a tolerance justification. `units` maps
+  JSON pointers (for example `/sepal_length_mean`) to expected unit names. Each
+  quantity must contain a numeric `value` and the exact expected `unit`. No implicit
+  unit conversion occurs.
 
-Replace the zero placeholder with a reviewed local image ID. Unknown fields,
-unsafe paths, mutable image tags, empty commands/comparisons, duplicate output
-names and invalid resource limits are rejected. Commands are argument arrays;
-there is no implicit shell expansion. An explicitly requested shell is still code
-execution and requires review. The image entrypoint and healthcheck are overridden.
+Numbers match when `abs(actual-expected) <= max(relative_tolerance *
+max(abs(actual), abs(expected)), absolute_tolerance)`. Defaults are 1e-6 relative
+and 1e-9 absolute. Booleans are not numbers. Invalid/duplicate-key/nonfinite JSON,
+missing/unsafe outputs and files over 16 MiB fail comparison. Reports identify
+up to 100 differing JSON pointers with bounded value previews and retain hashes.
+No output or comparison string is evaluated as code. See [Iris](../examples/iris/README.md)
+for justified tolerances and quantity units on attributed real measurements.
 
-All references and dependency files must be registered. Dependency recording means
-recording the selected inventory paths and hashes alongside the image identity;
-it does not discover missing imports, run `pip freeze`, resolve dependencies or
-install them. Prepare all required software in the image before execution.
+## Isolation and quotas
 
-## Container and resource policy
+The container has no network, a read-only root filesystem, no capabilities,
+`no-new-privileges`, default seccomp and a non-root identity. The validated input
+snapshot is mounted read-only at `/experiment`. **There are no writable host
+mounts.** Output is a dedicated `/output` tmpfs with a real filesystem quota.
+`/tmp` is another 64 MiB tmpfs. Both mounts are `noexec,nosuid` with bounded inodes.
+Host application credentials/variables are not forwarded and Docker proxy variables
+are cleared. Reviewed image-baked variables remain the image owner's responsibility.
 
-The container runs with no network, a read-only root filesystem, all capabilities
-dropped, `no-new-privileges`, default seccomp and a non-root UID/GID. It receives a
-validated snapshot of the experiment at `/experiment` (working directory, read-only)
-and a dedicated writable output directory at `/output`. `/tmp` is a 64 MiB tmpfs
-with `noexec,nosuid`. No Docker socket or host home directory is mounted. Host
-application variables are not forwarded; Docker proxy variables are explicitly
-cleared. Environment variables baked into the reviewed image remain its responsibility.
+Defaults: one CPU, 256 MiB memory without extra swap, 64 processes, 60 seconds,
+64 MiB output and a 16 MiB per-file limit. Recipe bounds allow 0.1–4 CPUs,
+32–4096 MiB memory, 1–3600 seconds and 1–512 MiB output. Tmpfs uses container
+memory; a workload can reach its memory limit before filling the output quota.
+Analysis logs are redirected into bounded container files and retained up to the
+first MiB per stream, with invalid UTF-8 replaced. Excessive logging can itself
+cause a failed analysis under the file limit.
 
-Defaults: one CPU, 256 MiB memory with no extra swap, 64 processes, 60 seconds,
-16 MiB maximum file writes and bounded Docker log rotation. Recipes allow 0.1–4
-CPUs, 32–4096 MiB memory and 1–3600 seconds. The runner kills timed-out containers
-and removes its containers and anonymous volumes in cleanup. Logs retain at most
-the last 200 lines and one MiB per stream; they may be truncated.
+The host collects bounded tar streams only from selected container paths, validates
+all archive paths/types/counts/sizes and writes fresh files. Symlinks, hardlinks,
+special files, unsafe paths and more than 1000 entries are rejected. A timeout
+bounds collection as well as analysis. Residual background processes are unsupported;
+analysis must finish writing before it exits. Collection never trusts archive file
+permissions or follows output links. Containers share the host kernel, not a VM;
+use a separate VM for hostile workloads and retain external backups.
 
-Outputs are checked before retention: at most 1000 directory/file entries, 64 MiB
-total and only regular files/directories. Symlinks and special files are rejected.
-The retention limit is checked after execution, not a filesystem quota: a process
-can temporarily consume more output disk space by creating many files. Use a
-quota-controlled execution disk or separate VM for hostile workloads. Docker shares
-the host kernel and is not a VM or a security certification. Abrupt termination or
-daemon failure can require manual cleanup of a reported `openrepro-*` container;
-never remove unrelated containers.
+## Recovery and reports
 
-## Reports and comparison
+The new external run directory contains `report.json`, `journal.json`, `stdout.txt`,
+`stderr.txt` and `outputs/`. It must be outside the experiment and cannot contain
+commas, which conflict with Docker bind syntax. Original files/provenance/exports
+are preserved. Reports include input/recipe hashes, image/platform/digests, runtime
+capabilities, dependencies, quota, timestamps, exit code, timeout and comparison.
+`report` creates a self-contained HTML summary with escaped analysis content.
 
-A new external run directory contains `report.json`, `stdout.txt`, `stderr.txt`
-and `outputs/`. It must be outside the experiment and cannot contain commas (Docker
-mount syntax). The input snapshot is removed. Original files, provenance and old
-exports are unchanged. The report records experiment UUID, manifest hash, recipe,
-normalized recipe hash, image ID/platform/repository digests, Docker capability/version
-observations, selected dependency-file hashes, timestamps, exit code, timeout and
-per-file comparison results. Logs/output bytes are untrusted analysis output.
-
-`exact` compares bytes using SHA-256. `json-numeric` compares nested JSON objects
-and arrays: object keys and array lengths/order must match; numeric values use
-`abs(actual-expected) <= max(relative_tolerance * max(abs(actual), abs(expected)),
-absolute_tolerance)`. Strings, nulls and booleans must match exactly; booleans are
-not numbers. Duplicate keys, nonfinite values, invalid JSON, missing/unsafe files
-and files over 16 MiB fail comparison. No output is evaluated as code.
-
-Exit status 0 means successful operation/comparison, 1 means a completed failed run
-or comparison, and 2 means invalid input, missing opt-in, unsupported runtime or
-infrastructure error. Timeouts and nonzero analysis exits produce failed reports
-when Docker remains available. Infrastructure errors and rejected unsafe outputs
-raise errors and do not retain a completed run directory. Existing destinations are
-preserved. Use one trusted local writer; concurrent local modifications are unsupported.
-
-PASS means the command exited successfully and selected files matched under the
-chosen tolerances. It does not prove scientific correctness or independent
-regeneration: a script can copy reference data visible in its experiment. Reports
-always retain `scientific_validity: NOT_EVALUATED`. Review methods and dependencies
-and use independent scientific validation as appropriate.
-
-## Development validation
-
-The portable suite exercises recipe validation and comparisons without Docker.
-The real runner tests require explicit opt-in via a reviewed local Python image:
+A private staging directory `.openrepro-run-*` holds an atomic journal before
+container creation. Containers carry the exact run ID as a Docker label. If the
+runner is abruptly killed, or cleanup fails, preserve this directory and run:
 
 ```bash
-OPENREPRO_TEST_IMAGE="$REPRO_IMAGE_ID" python -m pytest tests/test_reproduction_docker.py -q
+openrepro recover PARENT/.openrepro-run-ID --json
 ```
 
-Without that variable the eight Docker cases are skipped, not counted as passed.
-CI adds a dedicated Ubuntu job that pulls the official Python image, resolves its
-ID and runs those tests, including packaged CSV analysis, read-only inputs,
-non-root execution, absence of host variables/socket, network isolation, timeout,
-nonzero exits, mismatches, unsafe outputs and destination preservation.
+Recovery removes only the exact name/label match, marks cancellation and preserves
+staging for inspection. It is idempotent. It never removes unrelated containers.
+Handled successful/failed runs normally remove their containers/anonymous volumes
+and staging snapshots. Infrastructure failure or unsafe output produces an error;
+a completed output directory is not promised for those failures. Use one trusted
+local writer and parent-directory ownership; malicious local concurrent writers
+are outside the security model.
+
+A completed run reports FAIL for timeout, nonzero exit or mismatched outputs.
+PASS means only that the command exited successfully and declared outputs matched.
+The script can see reference files and could copy them; this is not proof of
+independent regeneration or scientific correctness. Scientific validity remains
+`NOT_EVALUATED`. Independent scientific and deployment review remain release gates.
+
+## Tests
+
+Set `OPENREPRO_TEST_IMAGE` to a reviewed local Python image ID to run real Docker
+cases; otherwise they skip. Tests exercise quotas, read-only inputs, missing host
+variables/socket, network isolation, errors/timeouts, recovery, Python/shell,
+offline image build and both synthetic and real-data analyses. See the
+[verification report](verification.md) for actual counts and observed outcomes.

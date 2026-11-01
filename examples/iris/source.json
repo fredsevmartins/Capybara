@@ -1,0 +1,11 @@
+{
+  "attribution": "Fisher, R. A. (1936), Iris. UCI Machine Learning Repository.",
+  "license": "CC-BY-4.0",
+  "limitations": "Public historical observations, not a newly collected or independently audited study; mirrored scikit-learn variant may differ from other Iris transcriptions.",
+  "reference_implementation": "NumPy 2.5.4 mean and std(ddof=1)",
+  "retrieved_from": "https://raw.githubusercontent.com/scikit-learn/scikit-learn/84fc20f30f5150b415c11ac9a20123f6b2de876d/sklearn/datasets/data/iris.csv",
+  "sha256": "f13ffa8fdd56fd8e6c8d16d4081a3fbd3114bcd0aae4256c43205169cd9d1449",
+  "source_doi": "10.24432/C56C76",
+  "source_url": "https://archive.ics.uci.edu/dataset/53/iris",
+  "title": "Iris measurements (Fisher / UCI)"
+}

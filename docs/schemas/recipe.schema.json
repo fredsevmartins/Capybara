@@ -1,0 +1,132 @@
+{
+  "$defs": {
+    "Comparison": {
+      "additionalProperties": false,
+      "properties": {
+        "absolute_tolerance": {
+          "default": 1e-09,
+          "minimum": 0,
+          "title": "Absolute Tolerance",
+          "type": "number"
+        },
+        "justification": {
+          "default": "",
+          "title": "Justification",
+          "type": "string"
+        },
+        "mode": {
+          "default": "exact",
+          "enum": [
+            "exact",
+            "json-numeric",
+            "quantities"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "output": {
+          "title": "Output",
+          "type": "string"
+        },
+        "reference": {
+          "title": "Reference",
+          "type": "string"
+        },
+        "relative_tolerance": {
+          "default": 1e-06,
+          "minimum": 0,
+          "title": "Relative Tolerance",
+          "type": "number"
+        },
+        "units": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Units",
+          "type": "object"
+        }
+      },
+      "required": [
+        "reference",
+        "output"
+      ],
+      "title": "Comparison",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "command": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 128,
+      "minItems": 1,
+      "title": "Command",
+      "type": "array"
+    },
+    "comparisons": {
+      "items": {
+        "$ref": "#/$defs/Comparison"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Comparisons",
+      "type": "array"
+    },
+    "cpus": {
+      "default": 1,
+      "maximum": 4,
+      "minimum": 0.1,
+      "title": "Cpus",
+      "type": "number"
+    },
+    "dependency_files": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 100,
+      "title": "Dependency Files",
+      "type": "array"
+    },
+    "image": {
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "title": "Image",
+      "type": "string"
+    },
+    "memory_mb": {
+      "default": 256,
+      "maximum": 4096,
+      "minimum": 32,
+      "title": "Memory Mb",
+      "type": "integer"
+    },
+    "output_mb": {
+      "default": 64,
+      "maximum": 512,
+      "minimum": 1,
+      "title": "Output Mb",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "0.2",
+      "default": "0.2",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "timeout_seconds": {
+      "default": 60,
+      "maximum": 3600,
+      "minimum": 1,
+      "title": "Timeout Seconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "image",
+    "command",
+    "comparisons"
+  ],
+  "title": "Recipe",
+  "type": "object"
+}

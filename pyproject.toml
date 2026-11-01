@@ -4,16 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openrepro"
-version = "0.2.0.dev0"
+version = "1.0.0rc1"
 description = "Portable, verifiable scientific experiment packages"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{name = "OpenRepro contributors"}]
-dependencies = ["pydantic>=2.12,<3", "mcp>=1.29,<2"]
+dependencies = ["pydantic>=2.12,<3", "mcp>=1.29,<2", "packaging>=25,<27", "httpx>=0.28,<1"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.4,<10", "ruff>=0.14,<1", "build>=1.2,<2", "setuptools>=75", "wheel", "matplotlib>=3.9,<4", "scipy>=1.14,<2"]
+environment = ["pip>=25,<27"]
+dev = ["pip>=25,<27", "twine>=6,<7", "pytest>=8.4,<10", "ruff>=0.14,<1", "build>=1.2,<2", "setuptools>=75", "wheel", "matplotlib>=3.9,<4", "scipy>=1.14,<2"]
+
+[project.urls]
+Homepage = "https://github.com/fredsevmartins/OpenRepro"
+Repository = "https://github.com/fredsevmartins/OpenRepro"
+Documentation = "https://github.com/fredsevmartins/OpenRepro/blob/main/docs/introduction.md"
+Issues = "https://github.com/fredsevmartins/OpenRepro/issues"
 
 [project.scripts]
 openrepro = "openrepro.cli:main"

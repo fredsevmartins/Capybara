@@ -1,0 +1,41 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "base_image": {
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "title": "Base Image",
+      "type": "string"
+    },
+    "requirements": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Requirements"
+    },
+    "schema_version": {
+      "const": "1",
+      "default": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "wheels": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 256,
+      "title": "Wheels",
+      "type": "array"
+    }
+  },
+  "required": [
+    "base_image"
+  ],
+  "title": "EnvironmentSpec",
+  "type": "object"
+}

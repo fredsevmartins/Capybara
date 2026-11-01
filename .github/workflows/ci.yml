@@ -41,3 +41,5 @@ jobs:
           echo "OPENREPRO_TEST_IMAGE=$(docker --host=unix:///var/run/docker.sock image inspect --format '{{.Id}}' python:3.12-slim)" >> "$GITHUB_ENV"
       - name: Real offline execution and comparison
         run: python -m pytest tests/test_reproduction_docker.py -q
+      - name: Resolve dependencies and exercise complete CLI workflow
+        run: python scripts/acceptance_smoke.py --output experiments/acceptance-ci --image "$OPENREPRO_TEST_IMAGE" --allow-download --allow-execution

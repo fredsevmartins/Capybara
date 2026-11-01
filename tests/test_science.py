@@ -49,3 +49,25 @@ def test_examples_export_import(tmp_path):
         root = import_experiment(tmp_path / f"generated/{name}.orepro", tmp_path / name)
         assert validate_experiment(root)["status"] == "PASS"
         assert (root / "results/figures/figure.png").stat().st_size > 1000
+
+
+def test_iris_source_identity_and_independent_reference():
+    import csv
+    import hashlib
+    import json
+    from statistics import mean, stdev
+
+    here = Path(__file__).resolve().parents[1] / "examples/iris"
+    source = json.loads((here / "source.json").read_text())
+    assert hashlib.sha256((here / "iris.csv").read_bytes()).hexdigest() == source["sha256"]
+    with (here / "iris.csv").open(newline="") as stream:
+        rows = list(csv.reader(stream))[1:]
+    assert len(rows) == 150
+    reference = json.loads((here / "reference.json").read_text())
+    for index, name in enumerate(("sepal_length", "sepal_width", "petal_length", "petal_width")):
+        values = [float(row[index]) for row in rows]
+        assert mean(values) == pytest.approx(reference[name + "_mean"]["value"], rel=1e-12)
+        assert stdev(values) == pytest.approx(reference[name + "_sample_sd"]["value"], rel=1e-12)
+        assert reference[name + "_mean"]["unit"] == "cm"
+    assert reference["sepal_length_mean"]["value"] == pytest.approx(5.843333333333334)
+    assert reference["petal_length_mean"]["value"] == pytest.approx(3.758)
