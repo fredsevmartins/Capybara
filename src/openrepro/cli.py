@@ -5,7 +5,15 @@ import json
 from pathlib import Path
 
 from . import __version__
-from .experiments import add_file, create_experiment, inspect_experiment, load
+from .experiments import (
+    add_file,
+    create_experiment,
+    inspect_experiment,
+    load,
+    remove_file,
+    replace_file,
+    update_metadata,
+)
 from .models import Role
 from .packages import export_experiment, import_experiment
 from .validation import validate_experiment
@@ -16,7 +24,19 @@ def parser() -> argparse.ArgumentParser:
         prog="openrepro", description="Share experiments. Reproduce science."
     )
     sub = p.add_subparsers(dest="command", required=True)
-    for command in ("init", "add", "list", "inspect", "validate", "export", "import", "version"):
+    for command in (
+        "init",
+        "add",
+        "list",
+        "inspect",
+        "validate",
+        "export",
+        "import",
+        "version",
+        "update",
+        "remove",
+        "replace",
+    ):
         s = sub.add_parser(command, help=f"{command.capitalize()} an experiment or package")
         s.add_argument("--json", action="store_true", help="Print structured JSON")
         if command == "init":
@@ -33,6 +53,14 @@ def parser() -> argparse.ArgumentParser:
             s.add_argument("destination", type=Path)
         elif command != "version":
             s.add_argument("path", type=Path)
+        if command == "update":
+            s.add_argument(
+                "--metadata", required=True, type=Path, help="JSON object of metadata changes"
+            )
+        if command in ("remove", "replace"):
+            s.add_argument("file", help="Registered relative file path")
+        if command == "replace":
+            s.add_argument("source", type=Path)
         if command == "add":
             s.add_argument("source", type=Path)
             s.add_argument("--role", choices=[r.value for r in Role], required=True)
@@ -58,6 +86,15 @@ def main() -> None:
                 license=args.license,
                 reproduction=args.reproduction,
             ).model_dump(mode="json")
+        elif c == "update":
+            from .experiments import load_json
+
+            result = update_metadata(args.path, load_json(args.metadata)).model_dump(mode="json")
+        elif c == "remove":
+            remove_file(args.path, args.file)
+            result = {"removed": args.file}
+        elif c == "replace":
+            result = replace_file(args.path, args.file, args.source).model_dump(mode="json")
         elif c == "add":
             result = add_file(
                 args.path, args.source, Role(args.role), args.description, args.derived_from

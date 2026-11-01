@@ -16,6 +16,19 @@ for path in [root / "README.md", *sorted((root / "docs").rglob("*.md"))]:
 for path in sorted((root / "docs/diagrams").glob("*.mmd")):
     source = path.read_text().strip()
     assert f"```mermaid\n{source}\n```" in path.with_suffix(".md").read_text()
-for command in ("init", "add", "list", "inspect", "validate", "export", "import", "version"):
+commands = (
+    "init",
+    "add",
+    "list",
+    "inspect",
+    "validate",
+    "export",
+    "import",
+    "version",
+    "update",
+    "remove",
+    "replace",
+)
+for command in commands:
     assert command in parser().format_help()
-print(f"Checked {count} local links, six mirrored Mermaid sources and eight CLI commands")
+print(f"Checked {count} local links, six mirrored Mermaid sources and {len(commands)} CLI commands")

@@ -12,7 +12,7 @@ Required documents:
 | `manifest.json` | OpenRepro schema `0.1`, experiment and payload inventory |
 | `ro-crate-metadata.json` | RO-Crate 1.1 JSON-LD graph generated from manifest |
 | `README.md` | Inventoried human summary |
-| `provenance/provenance.json` | Inventoried creation-event record |
+| `provenance/provenance.json` | Inventoried operation-event record |
 
 Manifest fields include UUID identifier, title, description, nonempty authors,
 timezone-aware creation date, software version, license, optional domain, keywords,
@@ -45,3 +45,9 @@ are retained; archive timestamps normalize to 1980-01-01 and file mode to 0644.
 Sorted entries make repeated exports of the same workspace identical.
 
 [Package structure diagram](diagrams/package-structure.md)
+
+Editing appends provenance events for `add`, `replace`, `remove` and
+`update_metadata`, in addition to `create`. Events include UTC `at` timestamps;
+file operations record relative paths and hashes, replacement records the previous
+hash, and metadata updates record changed field names. Existing packages with only
+a creation event remain supported. The history is descriptive and unsigned.

@@ -26,7 +26,8 @@ can differ; the above uses the common `mcpServers` convention, not a universal s
 
 Tools: `create_experiment`, `add_experiment_file`, `list_experiments`,
 `inspect_experiment`, `validate_experiment`, `export_experiment`, `import_experiment`,
-`list_experiment_files`. Tool annotations generate validated JSON schemas; successful
+`list_experiment_files`, `update_experiment_metadata`, `replace_experiment_file`,
+`remove_experiment_file`. Tool annotations generate validated JSON schemas; successful
 calls return `{ "ok": true, "result": ... }`. Operational errors return a sanitized
 `ok: false` result; schema errors are MCP errors. File roles are enumerated.
 
@@ -40,4 +41,14 @@ files. Use a local MCP-capable client; ChatGPT integration would require a separ
 reviewed supported transport/deployment. No public endpoint is implemented in v0.1.
 
 `tests/test_interfaces.py::test_real_mcp_stdio` initializes an actual SDK client,
-lists all tools and exercises their calls over stdio. [Interaction diagram](diagrams/mcp.md).
+lists all eleven tools and exercises their calls over stdio. [Interaction diagram](diagrams/mcp.md).
+
+Editing tool arguments:
+
+- `update_experiment_metadata(path, changes)`: an object of editable metadata fields.
+- `replace_experiment_file(path, file, source)`: experiment path, registered relative
+  payload path and replacement source relative to the configured MCP root.
+- `remove_experiment_file(path, file)`: experiment and registered relative payload path.
+
+Editing follows the same provenance, dependency protection and rollback rules as the
+CLI and Python API. See [editing and recovery](editing.md).

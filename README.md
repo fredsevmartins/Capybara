@@ -70,6 +70,15 @@ Three synthetic examples cover IV bolus pharmacokinetics, dissolution and an
 independent two-group comparison. Each contains data, protocol, analysis source,
 figure, calculated table and an exported package. See [expected results](docs/examples.md).
 
+## Editing experiments
+
+Use `openrepro update PATH --metadata changes.json` to apply descriptive metadata
+changes, `openrepro replace PATH REGISTERED_FILE SOURCE` for explicit payload
+replacement, and `openrepro remove PATH REGISTERED_FILE` to remove a payload.
+Edits record provenance and restore affected files after handled write failures.
+Dependent results must be removed before replacing their inputs. See
+[editing and recovery](docs/editing.md) for examples and limits.
+
 ## Package format and integrity
 
 Packages contain `manifest.json`, `ro-crate-metadata.json`, `README.md`,

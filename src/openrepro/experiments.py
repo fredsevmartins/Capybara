@@ -5,6 +5,8 @@ import json
 import os
 import shutil
 import tempfile
+from contextlib import contextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import quote
 
@@ -160,7 +162,7 @@ def create_experiment(
     return manifest
 
 
-def add_file(
+def _add_file(
     root: Path,
     source: Path,
     role: Role,
@@ -209,3 +211,152 @@ def inspect_experiment(root: Path) -> dict:
         "metadata": manifest.model_dump(mode="json"),
         "validation": validate_experiment(Path(root)),
     }
+
+
+PROVENANCE = "provenance/provenance.json"
+EDITABLE_METADATA = {
+    "title",
+    "description",
+    "authors",
+    "license",
+    "domain",
+    "keywords",
+    "doi",
+    "institution",
+    "experimental_date",
+    "reproduction",
+}
+
+
+@contextmanager
+def transaction(root: Path, payloads: list[str]):
+    """Restore affected bytes on handled failures; requires one trusted writer."""
+    from .validation import validate_experiment
+
+    root = Path(root)
+    if root.is_symlink() or any(p.is_symlink() for p in root.parents):
+        raise OpenReproError("Workspace symlinks are forbidden")
+    if validate_experiment(root)["status"] == "FAIL":
+        raise OpenReproError("Repair workspace validation failures before editing")
+    names = sorted(METADATA | {PROVENANCE} | set(payloads))
+    backup = Path(tempfile.mkdtemp(prefix=".openrepro-backup-", dir=root.parent))
+    retain_backup = False
+    originals = set()
+    try:
+        for index, name in enumerate(names):
+            path = bounded(root, name)
+            if path.exists():
+                shutil.copy2(path, backup / str(index))
+                originals.add(name)
+        (backup / "recovery.json").write_bytes(
+            json_bytes(
+                {"workspace": str(root.resolve()), "paths": names, "originals": sorted(originals)}
+            )
+        )
+        try:
+            yield
+            if validate_experiment(root)["status"] == "FAIL":
+                raise OpenReproError("Edit produced an invalid workspace")
+        except BaseException:
+            try:
+                for index, name in enumerate(names):
+                    path = bounded(root, name)
+                    if name in originals:
+                        os.replace(backup / str(index), path)
+                    else:
+                        path.unlink(missing_ok=True)
+            except OSError as exc:
+                retain_backup = True
+                raise OpenReproError(
+                    f"Rollback failed; recovery files retained at {backup}"
+                ) from exc
+            raise
+    finally:
+        if not retain_backup:
+            shutil.rmtree(backup)
+
+
+def record_event(root: Path, manifest: Manifest, action: str, **details) -> None:
+    provenance = load_json(bounded(root, PROVENANCE))
+    provenance["events"].append({"action": action, "at": datetime.now(UTC).isoformat(), **details})
+    atomic_write(bounded(root, PROVENANCE), json_bytes(provenance))
+    entry = next(f for f in manifest.files if f.path == PROVENANCE)
+    entry.sha256 = digest(root / PROVENANCE)
+    entry.size = (root / PROVENANCE).stat().st_size
+    save(root, manifest)
+
+
+def add_file(
+    root: Path,
+    source: Path,
+    role: Role,
+    description: str = "",
+    derived_from: list[str] | None = None,
+) -> FileEntry:
+    root, source = Path(root), Path(source)
+    role = Role(role)
+    relative = safe_path(f"{ROLE_DIR[role]}/{source.name}")
+    with transaction(root, [relative]):
+        entry = _add_file(root, source, role, description, derived_from)
+        record_event(root, load(root), "add", path=entry.path, sha256=entry.sha256)
+    return entry
+
+
+def update_metadata(root: Path, changes: dict) -> Manifest:
+    """Validate explicit metadata changes while preserving identity and inventory."""
+    root = Path(root)
+    if not changes or set(changes) - EDITABLE_METADATA:
+        raise OpenReproError("Supply editable metadata fields only")
+    with transaction(root, []):
+        data = load(root).model_dump(mode="json")
+        data.update(changes)
+        manifest = Manifest.model_validate(data)
+        record_event(root, manifest, "update_metadata", fields=sorted(changes))
+    return manifest
+
+
+def remove_file(root: Path, relative: str) -> None:
+    """Remove a registered payload unless other files depend on it."""
+    root = Path(root)
+    safe_path(relative)
+    if relative in {"README.md", PROVENANCE}:
+        raise OpenReproError("Required documents cannot be removed")
+    with transaction(root, [relative]):
+        manifest = load(root)
+        entry = next((f for f in manifest.files if f.path == relative), None)
+        if entry is None:
+            raise OpenReproError("File is not registered")
+        if any(relative in f.derived_from for f in manifest.files):
+            raise OpenReproError("Remove dependent files first")
+        bounded(root, relative).unlink()
+        manifest.files.remove(entry)
+        record_event(root, manifest, "remove", path=relative, sha256=entry.sha256)
+
+
+def replace_file(root: Path, relative: str, source: Path) -> FileEntry:
+    """Explicitly replace a payload; dependent results must be removed first."""
+    root, source = Path(root), Path(source)
+    safe_path(relative)
+    if relative == PROVENANCE:
+        raise OpenReproError("Provenance cannot be replaced")
+    if source.is_symlink() or any(p.is_symlink() for p in source.parents):
+        raise OpenReproError("Source symlinks are forbidden")
+    if not source.is_file():
+        raise OpenReproError("Source must be a regular file")
+    with transaction(root, [relative]):
+        manifest = load(root)
+        entry = next((f for f in manifest.files if f.path == relative), None)
+        if entry is None:
+            raise OpenReproError("File is not registered")
+        if any(relative in f.derived_from for f in manifest.files):
+            raise OpenReproError("Remove dependent files before replacing their input")
+        old_hash = entry.sha256
+        target = bounded(root, relative)
+        if source.resolve() == target.resolve():
+            raise OpenReproError("Replacement source must be a separate file")
+        shutil.copyfile(source, target)
+        entry.sha256, entry.size = digest(target), target.stat().st_size
+        record_event(
+            root, manifest, "replace", path=relative, previous_sha256=old_hash, sha256=entry.sha256
+        )
+    return entry

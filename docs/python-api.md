@@ -33,7 +33,22 @@ registered relative paths. `create_experiment` accepts `doi` and `experimental_d
 as optional metadata, in addition to the fields above. Defaults use a fresh UUID,
 UTC timestamp and CC-BY-4.0 data license; choose a license you have permission to apply.
 
-To manage metadata, call `load(root)`, change fields on its dumped JSON data, construct
-`Manifest.model_validate(data)`, then `save(root, updated)`. Validate afterward. Never
-edit checksums to conceal payload changes. Metadata updates are explicit, not automatic
-scientific provenance. Errors are `OpenReproError`/`ValueError` or filesystem exceptions.
+Use the transactional editing API for ordinary updates:
+
+```python
+from openrepro.experiments import update_metadata, replace_file, remove_file
+
+update_metadata(root, {"title": "Revised study", "reproduction": "Read protocol.md"})
+replace_file(root, "data/raw/observations.csv", Path("revised-observations.csv"))
+remove_file(root, "results/tables/obsolete.csv")
+```
+
+Replacement and removal reject files that still have registered dependents. Remove
+those derived outputs explicitly before changing their input. Required documents
+cannot be removed; provenance cannot be replaced. Metadata updates preserve UUID,
+creation date, schema/software versions and file inventory. See [editing](editing.md).
+
+`load` and `save` remain low-level primitives for format tooling. They do not append
+provenance or provide multi-file rollback; prefer the editing functions for user
+operations. Never edit checksums to conceal payload changes. Errors are
+`OpenReproError`/`ValueError` or filesystem exceptions.

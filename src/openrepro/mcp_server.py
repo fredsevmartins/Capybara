@@ -6,7 +6,14 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
-from .experiments import add_file, bounded, load
+from .experiments import (
+    add_file,
+    bounded,
+    load,
+    remove_file,
+    replace_file,
+    update_metadata,
+)
 from .experiments import create_experiment as create
 from .experiments import inspect_experiment as inspect
 from .models import Role
@@ -107,6 +114,32 @@ def make_server(workspace: Path) -> FastMCP:
         """List inventoried files and checksums without exposing machine-specific paths."""
         return run(
             lambda: [f.model_dump(mode="json") for f in load(bounded(workspace, path)).files]
+        )
+
+    @server.tool(structured_output=True)
+    def update_experiment_metadata(path: str, changes: dict[str, Any]) -> dict[str, Any]:
+        """Update descriptive metadata; preserve identity and record changed field names."""
+        return run(
+            lambda: update_metadata(bounded(workspace, path), changes).model_dump(mode="json")
+        )
+
+    @server.tool(structured_output=True)
+    def remove_experiment_file(path: str, file: str) -> dict[str, Any]:
+        """Remove a payload only when no registered files depend on it."""
+
+        def action():
+            remove_file(bounded(workspace, path), file)
+            return {"removed": file}
+
+        return run(action)
+
+    @server.tool(structured_output=True)
+    def replace_experiment_file(path: str, file: str, source: str) -> dict[str, Any]:
+        """Replace a payload from a workspace source; refuse dependent inputs."""
+        return run(
+            lambda: replace_file(
+                bounded(workspace, path), file, bounded(workspace, source)
+            ).model_dump(mode="json")
         )
 
     return server

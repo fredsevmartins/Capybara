@@ -30,7 +30,7 @@ def test_cli_workflow(tmp_path):
     package = tmp_path / "export.orepro"
     cli("export", root, package, "--json")
     cli("import", package, tmp_path / "imported", "--json")
-    assert cli("version", "--json")["version"] == "0.1.0"
+    assert cli("version", "--json")["version"] == "0.1.1"
     (root / "README.md").write_text("tampered")
     assert cli("validate", root, "--json", expected=1)["status"] == "FAIL"
     cli("export", root, tmp_path / "bad.orepro", "--json", expected=2)
@@ -46,7 +46,7 @@ def test_real_mcp_stdio(tmp_path):
             async with ClientSession(reader, writer) as session:
                 await session.initialize()
                 names = {tool.name for tool in (await session.list_tools()).tools}
-                assert len(names) == 8
+                assert len(names) == 11
 
                 async def call(name, args):
                     result = await session.call_tool(name, args)
@@ -76,6 +76,30 @@ def test_real_mcp_stdio(tmp_path):
                 assert (
                     await call(
                         "import_experiment", dict(package="study.orepro", destination="imported")
+                    )
+                )["ok"]
+                assert (
+                    await call(
+                        "update_experiment_metadata",
+                        {"path": "exp", "changes": {"title": "Updated"}},
+                    )
+                )["ok"]
+                (tmp_path / "replacement.csv").write_text("x\n2\n")
+                assert (
+                    await call(
+                        "replace_experiment_file",
+                        {"path": "exp", "file": "data/raw/input.csv", "source": "replacement.csv"},
+                    )
+                )["ok"]
+                assert (
+                    await call(
+                        "remove_experiment_file", {"path": "exp", "file": "data/raw/input.csv"}
+                    )
+                )["ok"]
+                assert not (
+                    await call(
+                        "update_experiment_metadata",
+                        {"path": "exp", "changes": {"identifier": "invalid"}},
                     )
                 )["ok"]
                 for path in ("../outside", str(tmp_path / "exp")):
