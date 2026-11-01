@@ -2,6 +2,8 @@
 
 ## 1.0.0rc2 — candidate
 
+- Rename the GitHub repository to Capybara; preserve OpenRepro package/CLI and published artifacts.
+
 - Add Repro, an original capybara scientist mascot, with transparent artwork and brand usage documentation.
 - Make interrupted catalog copies clean up only after file handles close, including Windows.
 - Preserve JUnit outcomes and expose safe CI failure summaries without masking failed tests.

@@ -1,4 +1,6 @@
-# OpenRepro
+# Capybara
+
+Capybara is the home of OpenRepro, the scientific reproducibility toolkit.
 
 <p align="center">
   <img src="docs/assets/repro-mascot.png" width="280" alt="Repro, the capybara scientist holding a verified research package">
@@ -27,12 +29,12 @@ See the [launch checklist](docs/launch-checklist.md) for the remaining release g
 
 ## Download
 
-The verified [v1.0.0rc2 GitHub Release](https://github.com/fredsevmartins/OpenRepro/releases/tag/v1.0.0rc2)
+The verified [v1.0.0rc2 GitHub Release](https://github.com/fredsevmartins/Capybara/releases/tag/v1.0.0rc2)
 contains an installable wheel, source archive and SHA-256 verification record. No
 PyPI account is required. For a clean installation from the published wheel:
 
 ```bash
-python -m pip install 'https://github.com/fredsevmartins/OpenRepro/releases/download/v1.0.0rc2/openrepro-1.0.0rc2-py3-none-any.whl'
+python -m pip install 'https://github.com/fredsevmartins/Capybara/releases/download/v1.0.0rc2/openrepro-1.0.0rc2-py3-none-any.whl'
 openrepro version --json
 ```
 

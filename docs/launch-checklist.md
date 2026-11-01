@@ -40,7 +40,7 @@ release/CI visibility and `upload.pypi.org` for distribution. A saved requiremen
 not a ready credential or an applied network policy.
 
 For PyPI, establish ownership of `openrepro`, configure a trusted publisher for
-`fredsevmartins/OpenRepro`, workflow `release.yml`, environment `pypi`, then run the
+`fredsevmartins/Capybara`, workflow `release.yml`, environment `pypi`, then run the
 manual workflow against a verified tag with `publish_pypi` enabled. It uses scoped
 OIDC, not a committed API token. The workflow builds and verifies artifacts first.
 Do not claim a package is available on PyPI until upload and clean installation

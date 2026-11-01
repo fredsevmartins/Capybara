@@ -19,6 +19,7 @@ OpenRepro preserves and exchanges experiment files without executing imported co
 - [Zenodo deposits and DOI](zenodo.md)
 - [RO-Crate interoperability](interoperability.md)
 - [Compatibility and supported API](compatibility.md)
+- [Repository rename](repository-rename.md)
 - [JSON schemas](schemas/README.md)
 - [Launch checklist](launch-checklist.md)
 - [GitHub-first releases](github-releases.md)

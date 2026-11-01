@@ -2,11 +2,11 @@
 
 ## Published rc2 verification
 
-[Main CI 41358831209](https://github.com/fredsevmartins/OpenRepro/actions/runs/41358831209)
-and [Release 41358830962](https://github.com/fredsevmartins/OpenRepro/actions/runs/41358830962)
+[Main CI 41358831209](https://github.com/fredsevmartins/Capybara/actions/runs/41358831209)
+and [Release 41358830962](https://github.com/fredsevmartins/Capybara/actions/runs/41358830962)
 completed successfully for commit 5c0a154. The release workflow ran all nine
 OS/Python combinations, real Docker reproduction and a separate frozen verification
-before publishing [v1.0.0rc2](https://github.com/fredsevmartins/OpenRepro/releases/tag/v1.0.0rc2).
+before publishing [v1.0.0rc2](https://github.com/fredsevmartins/Capybara/releases/tag/v1.0.0rc2).
 The PyPI job was not enabled; GitHub is the active distribution path.
 
 The public wheel/source assets and verification.json were downloaded after publication.
@@ -45,7 +45,7 @@ record; the ZIP/tag identity is unverified because direct Zenodo access returns 
 The citation uses the project/concept DOI, without assigning the rc1 version DOI to rc2.
 
 The public GitHub Actions page is now readable even though API access is denied.
-[Run 41354516427](https://github.com/fredsevmartins/OpenRepro/actions/runs/41354516427)
+[Run 41354516427](https://github.com/fredsevmartins/Capybara/actions/runs/41354516427)
 for commit 132b9b1 showed Linux and reproduction success, but all macOS/Windows
 matrix jobs failed during pytest. Detailed logs require additional access.
 Local reproductions identified directory-alias rejection (macOS temporary paths)
@@ -57,7 +57,7 @@ including all 14 Docker cases and the new path/newline regressions. Lint, schema
 build and strict Twine checks passed. The corrected remote matrix is checked
 separately after pushing these changes.
 
-[Run 41357838154](https://github.com/fredsevmartins/OpenRepro/actions/runs/41357838154)
+[Run 41357838154](https://github.com/fredsevmartins/Capybara/actions/runs/41357838154)
 for commit 7417492 completed successfully. Its nine OS/Python matrix combinations
 and the reproduction job passed. This closes the previously observed macOS/Windows
 failures for that commit; subsequent changes receive their own checks.

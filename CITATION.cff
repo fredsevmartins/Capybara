@@ -4,8 +4,8 @@ title: "OpenRepro: Share Experiments. Reproduce Science."
 version: 1.0.0rc2
 date-released: 2026-11-01
 license: MIT
-url: "https://github.com/fredsevmartins/OpenRepro"
-repository-code: "https://github.com/fredsevmartins/OpenRepro"
+url: "https://github.com/fredsevmartins/Capybara"
+repository-code: "https://github.com/fredsevmartins/Capybara"
 authors:
   - name: "OpenRepro contributors"
 doi: 10.5281/zenodo.23869678

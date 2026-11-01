@@ -18,7 +18,7 @@ Select GitHub and use:
 | --- | --- |
 | PyPI project name | `openrepro` |
 | GitHub owner | `fredsevmartins` |
-| GitHub repository | `OpenRepro` |
+| GitHub repository | `Capybara` |
 | Workflow filename | `release.yml` |
 | Environment name | `pypi` |
 
