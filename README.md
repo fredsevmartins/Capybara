@@ -4,9 +4,10 @@
 
 **Share Experiments. Reproduce Science.**
 
-OpenRepro v0.1 packages scientific experiment files with a versioned manifest,
+OpenRepro packages scientific experiment files with a versioned manifest,
 RO-Crate 1.1 metadata and SHA-256 checksums. Its CLI and local MCP server share
-one offline Python core. No database, Docker, API key or AI provider is required.
+one offline Python core. Package management needs no database, Docker, API key or
+AI provider. The v0.2 development workflow adds optional Linux/Docker reproduction.
 
 Researchers need to exchange protocols, data, analysis and provenance together.
 An `.orepro` file is an ordinary ZIP archive that preserves these files and checks
@@ -52,7 +53,7 @@ openrepro import demo.orepro experiments/received
 
 Validation returns `WARN` when reproduction instructions are absent, and `FAIL`
 for structural or checksum errors. A passing integrity check **does not establish
-scientific correctness**. Imported scripts are never executed.
+scientific correctness**. Importing never executes scripts. Explicit reproduction is a separate opt-in command.
 
 ## Interfaces and examples
 
@@ -78,6 +79,16 @@ replacement, and `openrepro remove PATH REGISTERED_FILE` to remove a payload.
 Edits record provenance and restore affected files after handled write failures.
 Dependent results must be removed before replacing their inputs. See
 [editing and recovery](docs/editing.md) for examples and limits.
+
+## Reproduction (v0.2 development)
+
+`openrepro plan PATH --spec recipe.json --json` validates a reviewed execution
+recipe without running it. `openrepro reproduce PATH --spec recipe.json --output
+NEW_RUN --allow-execution --json` executes in a local Linux Docker container with
+no network, read-only experiment inputs and resource limits. Results and the run
+report stay outside the experiment. `openrepro compare` also checks results without
+executing code. See the [complete reproduction workflow](docs/execution.md) and
+[synthetic example generator](examples/reproduction/generate.py).
 
 ## Package format and integrity
 
@@ -113,7 +124,9 @@ are in [docs/diagrams](docs/diagrams).
 
 - v0.1: workspaces, file inventory, metadata, ZIP exchange, validation, CLI, MCP,
   synthetic examples and tests.
-- v0.2 (planned): sandboxed execution, dependency capture and independent comparison.
+- v0.2 (in development): opt-in Docker execution, environment identity/dependency-file
+  recording and exact or numeric JSON comparison. Automatic environment building and
+  richer scientific workflows remain future work.
 - v0.3 (planned): research exchange, persistent identifiers and discovery.
 - v1.0 (planned): broader RO-Crate interoperability and multiple analysis languages.
 

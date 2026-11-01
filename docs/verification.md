@@ -1,5 +1,40 @@
 # Verification report
 
+## v0.2.0.dev0 development checks
+
+The new reproduction workflow was validated on Linux/Python 3.12.14 with local
+Docker 28.4.0. The official Python 3.12-slim test image resolved to local ID
+`sha256:ae4e8b7c575fabea88a029b6cae757f342ca2525e07f7c22272d5105c346b35e`
+and repository digest
+`python@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159`.
+
+- Full suite: **126 passed**, zero skipped, 18.15 seconds, with the test image selected.
+  This includes eight explicit real-Docker cases. Without
+  `OPENREPRO_TEST_IMAGE`, those cases are skipped rather than counted as passed.
+- Real execution verified read-only experiment inputs, non-root identity, no
+  forwarded host test variable/proxy, no Docker socket and only loopback networking.
+- The packaged analysis example was generated, exported, imported, executed and
+  compared through the CLI. Count, mean and sample standard deviation matched.
+- Nonzero exit, timeout, mismatched result, unsafe output and existing destination
+  cases were exercised. Binary logs are decoded with replacement rather than crashing.
+- Five capability tests verify refusal before container creation if memory, swap,
+  process/CPU limits or seccomp are unavailable.
+- Lint and formatting passed; the documentation checker found 65 local links,
+  six mirrored Mermaid sources and fourteen CLI commands.
+- Source archive and wheel built. An independently installed development wheel
+  outside the checkout imported the example, executed Docker reproduction and
+  compared results successfully, including image/dependency identity in its report.
+
+The new Ubuntu Docker CI job is saved but its remote outcome has not been checked.
+This report records validation before publication of the development pre-release.
+Remote commit/tag publication is checked separately after the push. The stable
+v0.1.1 remains separately tagged. No PyPI upload is included in these checks.
+See [execution](execution.md) for limits: container isolation shares the host kernel,
+output retention is not a disk quota, image distribution/dependency installation are
+manual, and comparison does not establish scientific correctness.
+
+## v0.1.1 historical baseline
+
 Current-instance checks for the v0.1.1 editing improvements were run on Linux
 with Python 3.12.14 and the committed `uv.lock`, using an isolated virtualenv.
 These results describe this instance, not remote CI or a restored cloud task.

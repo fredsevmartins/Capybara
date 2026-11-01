@@ -10,8 +10,11 @@ compatible ranges instead; operating system and fonts still affect rendered figu
 
 `analysis/scripts/generate.py` in each example rebuilds all demonstrations when run
 manually with the `dev` extra installed and a fresh `--output` directory. It requires
-an installed OpenRepro package. Automated execution of arbitrary imported scripts,
-sandboxing, environment capture and independent comparison are planned for v0.2.
-OpenRepro v0.1 preserves instructions and files, but does not run that workflow for you.
+an installed OpenRepro package. The v0.1 release preserves instructions and files without executing them. The v0.2
+development CLI adds an explicit [Docker reproduction workflow](execution.md),
+recording image identity, architecture, recipe and dependency-file hashes, then
+comparing declared results. It does not infer or install dependencies automatically.
+The original three demonstration generators still use their manual workflow; a
+separate dependency-free statistics example exercises the Docker runner.
 
 [Reproducibility concept diagram](diagrams/reproducibility.md)

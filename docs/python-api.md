@@ -52,3 +52,20 @@ creation date, schema/software versions and file inventory. See [editing](editin
 provenance or provide multi-file rollback; prefer the editing functions for user
 operations. Never edit checksums to conceal payload changes. Errors are
 `OpenReproError`/`ValueError` or filesystem exceptions.
+
+## Explicit reproduction (development)
+
+```python
+from openrepro.reproduction import Recipe, reproduction_plan, reproduce, compare_results
+from openrepro.experiments import load_json
+
+recipe = Recipe.model_validate(load_json(Path("recipe.json")))
+plan = reproduction_plan(root, recipe)  # no code execution or Docker access
+# After reviewing image, command, input files and tolerances:
+report = reproduce(root, recipe, Path("runs/new-run"), allow_execution=True)
+comparison = compare_results(root, Path("runs/new-run/outputs"), recipe.comparisons)
+```
+
+The runner requires Linux/local Docker, a preloaded immutable image ID and a new
+external destination. `compare_results` needs neither Docker nor execution opt-in.
+See [execution](execution.md) for the report schema, defaults and limitations.

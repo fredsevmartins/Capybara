@@ -25,3 +25,19 @@ jobs:
       - run: openrepro validate examples/generated/dissolution --json
       - run: openrepro validate examples/generated/statistics --json
       - run: python scripts/check_docs.py
+
+  reproduction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e ".[dev]"
+      - name: Prepare reviewed Python test image
+        shell: bash
+        run: |
+          docker --host=unix:///var/run/docker.sock pull python:3.12-slim
+          echo "OPENREPRO_TEST_IMAGE=$(docker --host=unix:///var/run/docker.sock image inspect --format '{{.Id}}' python:3.12-slim)" >> "$GITHUB_ENV"
+      - name: Real offline execution and comparison
+        run: python -m pytest tests/test_reproduction_docker.py -q

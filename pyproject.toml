@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openrepro"
-version = "0.1.1"
+version = "0.2.0.dev0"
 description = "Portable, verifiable scientific experiment packages"
 readme = "README.md"
 requires-python = ">=3.11"

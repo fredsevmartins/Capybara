@@ -12,6 +12,7 @@ OpenRepro preserves and exchanges experiment files without executing imported co
 - [Python API](python-api.md)
 - [Synthetic examples](examples.md)
 - [Reproducibility](reproducibility.md)
+- [Opt-in Docker execution](execution.md)
 - [Security](security.md)
 - [Troubleshooting](troubleshooting.md)
 - [FAQ](faq.md)

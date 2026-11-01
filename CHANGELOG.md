@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0.dev0 — 2026-11-01 (pre-release)
+
+- Add validated reproduction recipes and CLI `plan`, `reproduce` and `compare` commands.
+- Run reviewed code in a preloaded immutable Linux Docker image with no network,
+  read-only inputs, non-root identity and resource limits; require explicit opt-in.
+- Record image identity/platform, dependency-file hashes, recipe hash and run status.
+- Compare exact bytes or nested numeric JSON with explicit tolerances and strict parsing.
+- Add a dependency-free packaged analysis example, real Docker tests and a Linux CI job.
+- Keep package schema 0.1 and the eleven management-only MCP tools compatible.
+
 ## 0.1.1 — 2026-11-01
 
 - Add transactional file registration, payload replacement/removal and metadata updates.

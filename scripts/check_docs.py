@@ -28,6 +28,9 @@ commands = (
     "update",
     "remove",
     "replace",
+    "plan",
+    "reproduce",
+    "compare",
 )
 for command in commands:
     assert command in parser().format_help()

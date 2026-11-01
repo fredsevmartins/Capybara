@@ -52,3 +52,7 @@ Editing tool arguments:
 
 Editing follows the same provenance, dependency protection and rollback rules as the
 CLI and Python API. See [editing and recovery](editing.md).
+
+The v0.2 development execution/comparison commands are CLI/Python-only. No MCP tool
+starts containers, pulls images or runs scripts; the eleven management tools remain
+unchanged. Use the explicit reviewed [execution workflow](execution.md) separately.

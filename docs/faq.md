@@ -6,8 +6,9 @@ metadata plus a versioned OpenRepro manifest.
 **Does PASS mean scientifically verified?** No. It means the implemented structural
 and integrity checks found no issues. Scientific validity is always NOT_EVALUATED.
 
-**Does it run experiments?** No. Scripts are preserved without execution. Sandboxed
-reproduction is planned for v0.2.
+**Does it run experiments?** Importing and validation never execute code. The v0.2
+development CLI offers explicit opt-in reproduction on Linux with local Docker.
+See [execution](execution.md) for prerequisites and limits.
 
 **Does it require ChatGPT?** No. CLI and Python work locally and offline after installation.
 A local MCP client is optional; hosted ChatGPT connectivity is not verified.

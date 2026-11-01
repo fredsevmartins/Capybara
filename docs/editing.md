@@ -1,7 +1,7 @@
 # Editing and recovery
 
-OpenRepro supports a local, single-writer experiment lifecycle. Imported scripts
-are never executed. Exported packages are immutable outputs: editing a workspace
+OpenRepro supports a local, single-writer experiment lifecycle. Imports never execute scripts. Reviewed code can run only through the separate
+opt-in [reproduction workflow](execution.md). Exported packages are immutable outputs: editing a workspace
 requires a new export to share the revision.
 
 ## Metadata updates

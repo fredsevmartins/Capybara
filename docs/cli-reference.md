@@ -15,6 +15,9 @@ Use `openrepro COMMAND --help` for the argument parser's authoritative options.
 | `validate PATH` | PASS, WARN or FAIL and structured issues |
 | `export PATH OUTPUT` | Validate and create a new deterministic `.orepro` ZIP |
 | `import PACKAGE DESTINATION` | Stage, validate and import to a new directory |
+| `plan PATH --spec RECIPE.json` | Validate recipe, references and dependency files without execution |
+| `reproduce PATH --spec RECIPE.json --output NEW_RUN --allow-execution` | Explicit Linux/Docker execution and comparison |
+| `compare PATH --spec RECIPE.json --outputs DIRECTORY` | Compare existing outputs without Docker or execution |
 | `version` | Installed software version |
 
 ```bash
@@ -24,8 +27,10 @@ openrepro validate experiments/study --json
 ```
 
 Exit status: 0 for successful operations and PASS/WARN validation, 1 for FAIL
-validation, 2 for invalid arguments or failed operations. Human output uses labeled
+validation/comparison/reproduction, 2 for invalid arguments or failed operations. Human output uses labeled
 fields; JSON uses objects suitable for tooling. CLI error messages may include caller
 paths; MCP errors are sanitized to avoid disclosing machine-specific locations.
 
 See [editing and recovery](editing.md) for complete examples, allowed metadata fields and failure handling.
+
+For reproduction recipes, run reports and platform limits, see [execution](execution.md).

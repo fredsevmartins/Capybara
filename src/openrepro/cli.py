@@ -36,6 +36,9 @@ def parser() -> argparse.ArgumentParser:
         "update",
         "remove",
         "replace",
+        "plan",
+        "reproduce",
+        "compare",
     ):
         s = sub.add_parser(command, help=f"{command.capitalize()} an experiment or package")
         s.add_argument("--json", action="store_true", help="Print structured JSON")
@@ -53,6 +56,19 @@ def parser() -> argparse.ArgumentParser:
             s.add_argument("destination", type=Path)
         elif command != "version":
             s.add_argument("path", type=Path)
+        if command in ("plan", "reproduce", "compare"):
+            s.add_argument(
+                "--spec", required=True, type=Path, help="Reviewed reproduction recipe JSON"
+            )
+        if command == "reproduce":
+            s.add_argument("--output", required=True, type=Path, help="New external run directory")
+            s.add_argument(
+                "--allow-execution", action="store_true", help="Explicitly execute reviewed code"
+            )
+        if command == "compare":
+            s.add_argument(
+                "--outputs", required=True, type=Path, help="Directory of regenerated outputs"
+            )
         if command == "update":
             s.add_argument(
                 "--metadata", required=True, type=Path, help="JSON object of metadata changes"
@@ -86,6 +102,19 @@ def main() -> None:
                 license=args.license,
                 reproduction=args.reproduction,
             ).model_dump(mode="json")
+        elif c in ("plan", "reproduce", "compare"):
+            from .experiments import load_json
+            from .reproduction import Recipe, compare_results, reproduce, reproduction_plan
+
+            recipe = Recipe.model_validate(load_json(args.spec))
+            if c == "plan":
+                result = reproduction_plan(args.path, recipe)
+            elif c == "compare":
+                result = compare_results(args.path, args.outputs, recipe.comparisons)
+            else:
+                result = reproduce(
+                    args.path, recipe, args.output, allow_execution=args.allow_execution
+                )
         elif c == "update":
             from .experiments import load_json
 
@@ -118,7 +147,7 @@ def main() -> None:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:
             print(human(result))
-        if c == "validate" and result["status"] == "FAIL":
+        if c in ("validate", "compare", "reproduce") and result["status"] == "FAIL":
             raise SystemExit(1)
     except (ValueError, OSError) as exc:
         if args.json:
