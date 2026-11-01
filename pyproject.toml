@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openrepro"
-version = "1.0.0rc1"
+version = "1.0.0rc2"
 description = "Portable, verifiable scientific experiment packages"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -17,6 +17,7 @@ environment = ["pip>=25,<27"]
 dev = ["pip>=25,<27", "twine>=6,<7", "pytest>=8.4,<10", "ruff>=0.14,<1", "build>=1.2,<2", "setuptools>=75", "wheel", "matplotlib>=3.9,<4", "scipy>=1.14,<2"]
 
 [project.urls]
+DOI = "https://doi.org/10.5281/zenodo.23869678"
 Homepage = "https://github.com/fredsevmartins/OpenRepro"
 Repository = "https://github.com/fredsevmartins/OpenRepro"
 Documentation = "https://github.com/fredsevmartins/OpenRepro/blob/main/docs/introduction.md"

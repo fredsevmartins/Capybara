@@ -4,12 +4,19 @@
 
 **Share Experiments. Reproduce Science.**
 
+[Project DOI: 10.5281/zenodo.23869678](https://doi.org/10.5281/zenodo.23869678).
+The manually published record titled 1.0.0rc1 is
+[10.5281/zenodo.23869679](https://doi.org/10.5281/zenodo.23869679).
+The uploaded ZIP is named `OpenRepro-main.zip`; its exact correspondence with the
+rc1 tag has not yet been independently checked. The rc2 corrections are a later
+revision and do not replace files in that deposit.
+
 OpenRepro packages protocols, data, analysis and provenance into portable `.orepro`
 archives. It validates integrity, runs explicitly reviewed analysis in Linux Docker,
 compares outputs, and exchanges immutable package revisions through a searchable
 catalog or Zenodo.
 
-This checkout is **1.0.0rc1, a release candidate**. Local engineering checks do not
+This checkout is **1.0.0rc2, a release candidate**. Local engineering checks do not
 establish independent scientific validation, public deployment or a published DOI.
 See the [launch checklist](docs/launch-checklist.md) for the remaining release gates.
 

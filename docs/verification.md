@@ -1,5 +1,26 @@
 # Verification report
 
+## DOI publication and cross-platform follow-up
+
+The user supplied the published Zenodo record page for 23869679, titled OpenRepro
+1.0.0rc1, with concept DOI 10.5281/zenodo.23869678. The screenshot confirms a public
+record; the ZIP/tag identity is unverified because direct Zenodo access returns 403.
+The citation uses the project/concept DOI, without assigning the rc1 version DOI to rc2.
+
+The public GitHub Actions page is now readable even though API access is denied.
+[Run 41354516427](https://github.com/fredsevmartins/OpenRepro/actions/runs/41354516427)
+for commit 132b9b1 showed Linux and reproduction success, but all macOS/Windows
+matrix jobs failed during pytest. Detailed logs require additional access.
+Local reproductions identified directory-alias rejection (macOS temporary paths)
+and an incorrect fixed 8-byte fixture size under Windows CRLF. Rc2 canonicalizes
+explicit selection roots while retaining internal symlink rejection and uses actual
+fixture sizes. Regressions exercise aliases, LF/CRLF preservation and invalid sizes.
+The rc2 local full suite passed **177 tests**, zero skipped, in 35.16 seconds,
+including all 14 Docker cases and the new path/newline regressions. Lint, schema/docs,
+build and strict Twine checks passed. The corrected remote matrix is checked
+separately after pushing these changes.
+
+
 ## 1.0.0rc1 candidate
 
 Current-instance validation: Linux x86_64, Python 3.12.14, local Docker 28.4.0.

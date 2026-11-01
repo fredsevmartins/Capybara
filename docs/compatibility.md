@@ -1,7 +1,7 @@
 # Compatibility and supported API
 
 The software release version, package schema, recipe schema and environment schema
-are independent. The release candidate uses software `1.0.0rc1`, package schema
+are independent. The release candidate uses software `1.0.0rc2`, package schema
 `0.1`, recipe schema `0.2` and environment schema `1`. JSON schemas are published
 under [schemas](schemas/README.md), and `openrepro schema --kind ... --output ...`
 exports the currently installed definition.

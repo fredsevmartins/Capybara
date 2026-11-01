@@ -183,3 +183,27 @@ def test_failed_rollback_keeps_recovery_files(study, tmp_path, monkeypatch):
     assert recovery["workspace"] == str(study)
     assert "manifest.json" in recovery["originals"]
     assert (backups[0] / str(recovery["paths"].index("manifest.json"))).is_file()
+
+
+def test_explicit_paths_allow_system_directory_aliases(tmp_path):
+    physical = tmp_path / "physical"
+    physical.mkdir()
+    alias = tmp_path / "alias"
+    try:
+        alias.symlink_to(physical, target_is_directory=True)
+    except OSError:
+        pytest.skip("Directory symlink creation unavailable")
+    root = physical / "study"
+    api.create_experiment(root, "Alias study", "D", ["A"], reproduction="Read protocol")
+    source = physical / "input.csv"
+    source.write_bytes(b"value\n1\n")
+    entry = api.add_file(alias / "study", alias / "input.csv", Role.raw)
+    source.write_bytes(b"value\n2\n")
+    api.replace_file(alias / "study", entry.path, alias / "input.csv")
+    api.update_metadata(alias / "study", {"title": "Updated through alias"})
+    assert (root / entry.path).read_bytes() == source.read_bytes()
+    assert validate_experiment(root)["status"] == "PASS"
+    direct = tmp_path / "workspace-link"
+    direct.symlink_to(root, target_is_directory=True)
+    with pytest.raises(OpenReproError, match="Workspace symlinks"):
+        api.update_metadata(direct, {"title": "Rejected"})

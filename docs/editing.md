@@ -81,3 +81,9 @@ For each numeric backup file `N` still present, restore it to workspace path
 before manual recovery and run `openrepro validate` before resuming work. An orphan
 backup after process termination requires inspection: the edit may already have
 completed, so do not blindly restore it.
+
+
+Parent directory aliases in explicitly selected local paths are canonicalized,
+including macOS temporary-directory aliases. Direct source/workspace symlinks and
+symlinks inside the experiment remain rejected. Newline bytes are preserved;
+metadata sizes/checksums must describe actual bytes on each platform.

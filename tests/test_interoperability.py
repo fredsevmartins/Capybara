@@ -28,7 +28,11 @@ def external_crate(tmp_path):
                 "hasPart": [{"@id": "measurement.csv"}],
             },
             {"@id": "#person", "@type": "Person", "name": "Researcher", "affiliation": "Institute"},
-            {"@id": "measurement.csv", "@type": "File", "contentSize": "8"},
+            {
+                "@id": "measurement.csv",
+                "@type": "File",
+                "contentSize": str((source / "measurement.csv").stat().st_size),
+            },
             {"@id": "#instrument", "@type": "IndividualProduct", "name": "Extra entity preserved"},
         ],
     }
@@ -78,5 +82,24 @@ def test_malformed_graph_types_report_input_errors(external_crate, tmp_path, fie
         document["@graph"][0]["hasPart"] = [value]
     (source / "ro-crate-metadata.json").write_text(json.dumps(document))
     with pytest.raises(OpenReproError):
+        convert_crate(source, tmp_path / "converted")
+    assert not (tmp_path / "converted").exists()
+
+
+@pytest.mark.parametrize("data", [b"value\n1\n", b"value\r\n1\r\n"])
+def test_crate_size_uses_actual_bytes_and_preserves_newlines(external_crate, tmp_path, data):
+    source, document = external_crate
+    (source / "measurement.csv").write_bytes(data)
+    document["@graph"][2]["contentSize"] = str(len(data))
+    (source / "ro-crate-metadata.json").write_text(json.dumps(document), encoding="utf-8")
+    convert_crate(source, tmp_path / "converted")
+    assert (tmp_path / "converted/measurement.csv").read_bytes() == data
+
+
+def test_declared_wrong_size_still_fails(external_crate, tmp_path):
+    source, document = external_crate
+    document["@graph"][2]["contentSize"] = "999"
+    (source / "ro-crate-metadata.json").write_text(json.dumps(document), encoding="utf-8")
+    with pytest.raises(OpenReproError, match="size mismatch"):
         convert_crate(source, tmp_path / "converted")
     assert not (tmp_path / "converted").exists()

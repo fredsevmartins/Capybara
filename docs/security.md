@@ -36,3 +36,9 @@ content policies. Logs and outputs remain untrusted research content. No malware
 scanning, cryptographic authorship signatures, independent security certification
 or scientific validation is claimed. Stable release acceptance is tracked in the
 [launch checklist](launch-checklist.md).
+
+
+Explicitly selected source/workspace paths may resolve parent-directory aliases
+such as macOS `/var`; a directly selected symlink source/workspace remains rejected.
+Symlinks below the experiment or configured MCP root are still forbidden. Resolving
+trusted selection roots does not permit archive traversal or internal symlink payloads.

@@ -20,6 +20,7 @@ OpenRepro preserves and exchanges experiment files without executing imported co
 - [Compatibility and supported API](compatibility.md)
 - [JSON schemas](schemas/README.md)
 - [Launch checklist](launch-checklist.md)
+- [PyPI trusted publication](pypi-publication.md)
 - [Security](security.md)
 - [Troubleshooting](troubleshooting.md)
 - [FAQ](faq.md)

@@ -1,7 +1,7 @@
 # Release acceptance and external gates
 
 This file distinguishes implemented engineering work from acceptance that requires
-outside evidence. `1.0.0rc1` is a candidate, not a declaration that every final-product
+outside evidence. `1.0.0rc2` is a candidate, not a declaration that every final-product
 gate has been satisfied.
 
 | Stage | Engineering delivered | Acceptance still required |
@@ -10,8 +10,18 @@ gate has been satisfied.
 | 2. Execution reliability | Real tmpfs quota, no writable host mounts, bounded safe collection, timeout/cleanup, labelled recovery journals | Independent security review appropriate to the deployment threat model |
 | 3. Scientific evidence | Attributed real Iris measurements, independently implemented numerical references, units and justified tolerances | Independent researchers assessing real methods and new datasets |
 | 4. Researcher workflow | Recipe assistance, doctor, readable reports, complete CLI/API documentation | Usability feedback from researchers completing the workflow independently |
-| 5. Public sharing | Immutable revisions, search, content identities, citations, read-only catalog, resumable Zenodo integration | Real Zenodo token/access, reviewed metadata and confirmed published DOI |
+| 5. Public sharing | Immutable revisions, search, content identities, citations, read-only catalog, resumable Zenodo integration | Public record confirmed in user screenshot; exact archive/tag identity still needs checking; token only needed for API automation |
 | 6. Release preparation | Native-package regression tests, schemas, supported API, RO-Crate conversion, Python/shell execution, release artifacts and OIDC workflow | Successful remote CI matrix, PyPI project ownership/trusted publisher, actual distribution and restored-environment validation |
+
+## Published Zenodo record
+
+The user manually published a record titled OpenRepro 1.0.0rc1:
+[version DOI](https://doi.org/10.5281/zenodo.23869679),
+[project/concept DOI](https://doi.org/10.5281/zenodo.23869678).
+This is evidenced by the supplied published-record screenshot. Direct API access
+remains blocked here. The file is named OpenRepro-main.zip, so a byte/content
+comparison with the immutable rc1 tag remains unverified. Rc2 is a later revision.
+No API token is required to preserve this successful manual publication.
 
 ## Publishing credentials and infrastructure
 

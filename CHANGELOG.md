@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0rc2 — candidate
+
+- Resolve explicitly selected parent-directory aliases without accepting direct or internal symlinks.
+- Make RO-Crate test metadata describe actual LF/CRLF file sizes; preserve mismatch rejection.
+- Register the manually published project DOI and distinguish the rc1 record from later code.
+- Document PyPI trusted publication and verify the remote cross-platform matrix before promotion.
+
 ## 1.0.0rc1 — candidate (not final acceptance)
 
 - Resolve binary Python dependencies into registered exact hash locks and wheelhouses;

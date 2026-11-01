@@ -176,8 +176,9 @@ def _add_file(
     if report["status"] == "FAIL":
         raise OpenReproError("Repair workspace validation failures before adding files")
     manifest = load(root)
-    if source.is_symlink() or any(p.is_symlink() for p in source.parents):
+    if source.is_symlink():
         raise OpenReproError("Source symlinks are forbidden")
+    source = source.resolve()
     if not source.is_file():
         raise OpenReproError("Source must be a regular file")
     relative = safe_path(f"{ROLE_DIR[role]}/{source.name}")
@@ -234,8 +235,9 @@ def transaction(root: Path, payloads: list[str]):
     from .validation import validate_experiment
 
     root = Path(root)
-    if root.is_symlink() or any(p.is_symlink() for p in root.parents):
+    if root.is_symlink():
         raise OpenReproError("Workspace symlinks are forbidden")
+    root = root.resolve()
     if validate_experiment(root)["status"] == "FAIL":
         raise OpenReproError("Repair workspace validation failures before editing")
     names = sorted(METADATA | {PROVENANCE} | set(payloads))
@@ -339,8 +341,9 @@ def replace_file(root: Path, relative: str, source: Path) -> FileEntry:
     safe_path(relative)
     if relative == PROVENANCE:
         raise OpenReproError("Provenance cannot be replaced")
-    if source.is_symlink() or any(p.is_symlink() for p in source.parents):
+    if source.is_symlink():
         raise OpenReproError("Source symlinks are forbidden")
+    source = source.resolve()
     if not source.is_file():
         raise OpenReproError("Source must be a regular file")
     with transaction(root, [relative]):
