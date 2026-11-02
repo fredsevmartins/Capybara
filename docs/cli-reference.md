@@ -1,6 +1,7 @@
 # CLI reference
 
-All commands accept `--json`. Run `openrepro COMMAND --help` for exact argument
+The [complete options reference](cli-options.md) reproduces every command’s exact
+help, required positional arguments, defaults and flags. All commands accept `--json`. Run `openrepro COMMAND --help` for exact argument
 requirements. Source scripts never run during import, validation, planning,
 comparison, recipe generation, catalog access or conversion.
 

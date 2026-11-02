@@ -18,9 +18,9 @@ right to publish third-party data or make private data public.
 Create a Zenodo personal token with the `deposit:write` and `deposit:actions` scopes.
 Enter it as `ZENODO_ACCESS_TOKEN` through secure environment settings, never in chat,
 command arguments, tracked files or metadata. Allow HTTPS to `zenodo.org`; API
-metadata and upload bucket links remain on that exact host. The cloud configuration
-draft declares this binding; saving a requirement does not supply its value or apply
-network access. Review/save environment settings before retrying a blocked request.
+metadata and upload bucket links remain on that exact host. Configure this in your own execution environment. Declaring a variable name
+is separate from securely supplying its value; check actual network access before
+retrying a blocked request.
 
 ```bash
 openrepro zenodo-deposit deposit --json
@@ -57,5 +57,42 @@ existing published record. Use Zenodo's versioning workflow for subsequent relea
 
 The integration follows the [official Zenodo API documentation](https://developers.zenodo.org/).
 Contract tests exercise draft/publication/retry/error paths without a real token.
-Those tests are not evidence of a successful live deposit. Live DOI registration
-remains blocked until the credential and destination access are actually available.
+Those tests are not evidence of a successful live deposit. A live API deposit requires actual credentials and destination access. The project
+also has a manually published record, described below; automated tests are separate
+from that publication evidence.
+
+
+## Manual upload and GitHub integration
+
+You may publish through the Zenodo web interface without configuring an API token:
+
+1. Log in at [Zenodo](https://zenodo.org/) and choose **New upload**.
+2. Upload the reviewed release archive or research package. Choose the correct
+   resource type, title, authors, description, license and publication date.
+3. Select **No, I need one** if this resource has no DOI. Reserving a DOI can help
+   prepare metadata, but registration/public availability happens on publication.
+4. Save the draft, inspect its preview, then publish when the files and rights are
+   correct. Confirm the public record URL and version DOI.
+5. Keep the receipt/record URL and archive identity with your research records.
+
+For future GitHub software releases, open your Zenodo account's **GitHub** settings,
+connect/authorize GitHub, sync repositories and enable `fredsevmartins/Capybara`.
+A subsequent stable GitHub Release can trigger archiving. Pre-releases may be ignored;
+existing old releases are not evidence of a new deposit. Check the actual Zenodo
+record before advertising a DOI. Avoid duplicate manual and automatic deposits
+for the same intended version; use Zenodo's new-version workflow where appropriate.
+
+## Cite the right record
+
+The project concept DOI is [10.5281/zenodo.23869678](https://doi.org/10.5281/zenodo.23869678).
+The user manually published a record titled OpenRepro 1.0.0rc1 with version DOI
+[10.5281/zenodo.23869679](https://doi.org/10.5281/zenodo.23869679). Its uploaded file
+is `OpenRepro-main.zip`; exact correspondence against the rc1 tag remains unverified.
+The stable 1.0.0 GitHub release is a later revision. Do not reuse the rc1 version DOI
+as proof of a 1.0.0 deposit. See [verification evidence](verification.md).
+
+A concept DOI represents the version family; a version DOI identifies one archived
+record. Choose the identifier that matches the work actually used. `CITATION.cff`
+contains the project citation metadata, and `openrepro cite` emits experiment
+citations from the local catalog. Declaring a DOI in metadata does not itself
+register, verify ownership of or publish that identifier.

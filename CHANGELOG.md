@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Rework the README around research workflows and welcome independent testing.
+- Add Portuguese onboarding, user-first stable installation, backup/restore guidance
+  and task-based troubleshooting; update software/schema terminology.
+- Publish complete CLI options and supported Python signatures/return descriptions.
+- Execute standalone CLI/API tutorials and check reference/schema freshness in CI.
+- Preserve immutable 1.0.0 release artifacts; these documentation updates are on main.
+
 ## 1.0.0 — 2026-11-01
 
 - Stable software contract for trusted local package management, controlled Docker

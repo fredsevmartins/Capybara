@@ -1,5 +1,20 @@
 # Verification report
 
+## Documentation maintenance after 1.0.0
+
+The main-branch documentation now includes standalone user installation/tutorials,
+Portuguese onboarding, complete generated CLI/API references, operations and
+troubleshooting. `scripts/check_docs.py` checks local links/images, mirrored diagrams,
+published schemas against models, exact CLI/API reference freshness and runs 15
+documented tutorial steps in fresh temporary workspaces. These CLI/API examples
+passed locally without Docker, network or credentials. This documentation check
+already runs in every portable CI matrix job and release verification.
+
+These updates do not rewrite the immutable 1.0.0 release artifacts or their recorded
+checksums below. Consult main for the latest guides; versioned archives preserve
+the documentation shipped with that release. Independent evaluations and user
+feedback are welcome through the contribution/evaluation workflows.
+
 ## Stable 1.0.0 local acceptance
 
 The final trusted-local software scope is documented in the

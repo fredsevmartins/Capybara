@@ -4,7 +4,7 @@
 - [Execution recipe 0.2](recipe.schema.json)
 - [Environment specification 1](environment.schema.json)
 
-These definitions are generated from the candidate's typed models and reject
+These definitions are generated from the software’s typed models and reject
 unknown fields. Fixed version strings are expressed as JSON Schema constants.
 Portable path normalization, local filesystem checks, graph relationships and
 runtime availability also require the application validator; JSON Schema alone

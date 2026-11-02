@@ -8,7 +8,9 @@ RO-Crate profile. Neither establishes authenticity or correctness.
 
 Scientific reproducibility means an independent analysis can reproduce stated
 results under specified assumptions. Scientific correctness requires appropriate
-models, measurements, units and inference. OpenRepro 0.1 does not assess either.
+models, measurements, units and inference. OpenRepro 1.0.0 supports reproducibility
+assessment through explicit execution and result comparison; researchers assess
+the methods, inputs and scientific conclusions independently.
 Reports always include `scientific_validity: NOT_EVALUATED`.
 
 Synthetic examples are demonstrations, not laboratory observations, clinical evidence

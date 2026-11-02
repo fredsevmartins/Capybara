@@ -14,7 +14,7 @@ A compatible local client's configuration can use this complete JSON example
 {
   "mcpServers": {
     "openrepro": {
-      "command": "/absolute/path/OpenRepro/.venv/bin/openrepro-mcp",
+      "command": "/absolute/path/Capybara/.venv/bin/openrepro-mcp",
       "args": ["--workspace", "/absolute/path/research"]
     }
   }
@@ -38,7 +38,7 @@ destinations must be new. Do not set the root to an entire home directory.
 ChatGPT's hosted connector mechanisms are not verified against this local stdio server.
 Do not paste this configuration into a hosted connector or assume it can reach local
 files. Use a local MCP-capable client; ChatGPT integration would require a separately
-reviewed supported transport/deployment. No public endpoint is implemented in v0.1.
+reviewed supported transport/deployment. The stable 1.0.0 server uses local stdio; no public MCP endpoint is implemented.
 
 `tests/test_interfaces.py::test_real_mcp_stdio` initializes an actual SDK client,
 lists all eleven tools and exercises their calls over stdio. [Interaction diagram](diagrams/mcp.md).
@@ -53,6 +53,6 @@ Editing tool arguments:
 Editing follows the same provenance, dependency protection and rollback rules as the
 CLI and Python API. See [editing and recovery](editing.md).
 
-The v0.2 development execution/comparison commands are CLI/Python-only. No MCP tool
+Execution/comparison commands in software 1.0.0 are CLI/Python-only. No MCP tool
 starts containers, pulls images or runs scripts; the eleven management tools remain
 unchanged. Use the explicit reviewed [execution workflow](execution.md) separately.

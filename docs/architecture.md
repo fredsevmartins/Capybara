@@ -17,7 +17,7 @@ root. CLI and Python API paths are explicitly controlled by the local caller.
 See [architecture diagram](diagrams/architecture.md).
 
 
-The release candidate adds separate environment, reproduction, experience, catalog,
+The stable 1.0.0 implementation includes separate environment, reproduction, experience, catalog,
 Zenodo and interoperability modules. Core package management remains offline and
 execution-free. Environment resolution has explicit network opt-in; builds and
 analysis are offline. Public sharing is separate from local catalog publication.

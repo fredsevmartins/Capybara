@@ -11,22 +11,34 @@ Meet **Repro**, our capybara scientist and companion for reproducible research.
 
 **Share Experiments. Reproduce Science.**
 
-[Project DOI: 10.5281/zenodo.23869678](https://doi.org/10.5281/zenodo.23869678).
-The manually published record titled 1.0.0rc1 is
-[10.5281/zenodo.23869679](https://doi.org/10.5281/zenodo.23869679).
-The uploaded ZIP is named `OpenRepro-main.zip`; its exact correspondence with the
-rc1 tag has not yet been independently checked. The stable 1.0.0 release is a later
-revision and do not replace files in that deposit.
+Capybara brings protocols, datasets, analysis code, results and provenance together
+in portable **`.orepro` experiment packages**. Its OpenRepro toolkit helps researchers
+check file integrity, reproduce reviewed analyses with Docker, compare results and
+share immutable research packages through local catalogs or Zenodo.
 
-OpenRepro packages protocols, data, analysis and provenance into portable `.orepro`
-archives. It validates integrity, runs explicitly reviewed analysis in Linux Docker,
-compares outputs, and exchanges immutable package revisions through a searchable
-catalog or Zenodo.
+**Version 1.0.0 is available for Linux, macOS and Windows**, with Docker execution
+on Linux. Use the command line, Python API or a compatible local MCP client to
+fit package management into your research workflow.
 
-This checkout is **1.0.0**, the stable release for trusted local package management
-and explicitly reviewed Docker reproduction. It does not certify scientific validity
-or provide a public multi-user execution service. See the
-[release scope and external evaluation](docs/launch-checklist.md).
+- **Organize and preserve:** keep research files, metadata, licenses and provenance together.
+- **Inspect and reproduce:** validate package integrity, plan explicit execution and
+  compare outputs with documented units and tolerances.
+- **Share and cite:** exchange versioned packages, generate citations and prepare
+  reviewed Zenodo deposits for persistent identification.
+
+**Independent testing and research contributions are welcome.** Try Capybara with
+your own methods and datasets, report reproducibility or usability findings, and
+help improve the toolkit. See the [evaluation protocol](docs/pilot-protocol.md)
+and [contribution guide](CONTRIBUTING.md) to participate.
+
+[Get started](docs/quickstart.md) · [Guia em português](docs/guide-pt-br.md) ·
+[Documentation](docs/introduction.md) ·
+[Project DOI: 10.5281/zenodo.23869678](https://doi.org/10.5281/zenodo.23869678)
+
+The toolkit records structural checks and result agreement to support scientific
+assessment by researchers. See [scientific interpretation](docs/scientific-integrity.md),
+[supported scope](docs/launch-checklist.md) and [release/archive evidence](docs/verification.md)
+for how to interpret reports and cite a specific archived version.
 
 ## Download
 
@@ -39,14 +51,20 @@ python -m pip install 'https://github.com/fredsevmartins/Capybara/releases/downl
 openrepro version --json
 ```
 
-Publication is gated by the full OS/Python/Docker release workflow. Independent
-researcher, usability and security evaluations have not been performed.
+The release passed the OS/Python/Docker verification workflow and clean-install
+acceptance. [Independent evaluations](docs/pilot-protocol.md) are welcome; share
+your findings through [issues](https://github.com/fredsevmartins/Capybara/issues).
 
-## Install
+## Install from source
 
-Python 3.11+; package management works on Linux, macOS and Windows:
+For the published wheel, follow [installation](docs/installation.md). For source
+examples or development, clone the repository first.
+
+Python 3.11–3.13; package management works on Linux, macOS and Windows:
 
 ```bash
+git clone https://github.com/fredsevmartins/Capybara.git
+cd Capybara
 python -m venv .venv
 # Unix: source .venv/bin/activate
 # Windows: .venv\Scripts\Activate.ps1
@@ -58,11 +76,12 @@ For the locked development environment, use `uv sync --frozen --extra dev`.
 management needs no database service, API key, Docker or AI provider. Execution
 and environment construction require Linux and a trusted local Docker daemon.
 Distribution currently uses GitHub and Zenodo. PyPI publication is optional and
-has been deferred; use this checkout for installation.
+has been deferred; use the verified GitHub wheel or a source checkout.
 
 ## Create and exchange a package
 
-Use new destination paths:
+After creating your own `observations.csv`, use new destination paths. For a
+self-contained first example, follow the [quick start](docs/quickstart.md).
 
 ```bash
 openrepro init experiments/study --title 'Study' --description 'Research description' --author 'Researcher' --reproduction 'Review protocol and analysis'

@@ -3,8 +3,8 @@
 ```mermaid
 flowchart LR
     O[Original results] --> P[Imported research package]
-    P --> V[Integrity validation in v0.1]
-    P -.-> I[Independent sandboxed calculation: planned v0.2]
-    I -.-> C[Result comparison: planned v0.2]
-    O -.-> C
+    P --> V[Integrity validation: package schema 0.1]
+    P --> I[Explicit reviewed Docker execution]
+    I --> C[Result comparison with units and tolerances]
+    O --> C
 ```

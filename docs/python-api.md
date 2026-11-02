@@ -1,87 +1,104 @@
 # Python API
 
+Use `from openrepro import api` for the supported surface. The
+[complete reference](api-reference.md) covers every exported name, exact signature
+and return value. Direct module imports remain compatible. Underscore-prefixed
+helpers, SQLite layout and Docker internals are not public contracts.
+
+## Complete local example
+
+Run this in a new empty directory with the installed venv active. It needs no
+checkout, network, Docker or credentials:
+
 ```python
 from pathlib import Path
-from openrepro.experiments import create_experiment, add_file, inspect_experiment
-from openrepro.models import Role
-from openrepro.packages import export_experiment, import_experiment
-from openrepro.validation import validate_experiment
+from openrepro import api
 
-root = Path("experiments/api-demo")
-manifest = create_experiment(
+source = Path("api-protocol.txt")
+source.write_text("Synthetic training protocol. No analysis is executed.\n", encoding="utf-8")
+root = Path("api-study")
+manifest = api.create_experiment(
     root,
-    "Synthetic study",
-    "Training only",
-    ["Researcher"],
-    domain="pharmacokinetics",
-    keywords=["synthetic"],
-    institution="Example lab",
+    "API study",
+    "Synthetic training only",
+    ["A. Researcher"],
     license="CC-BY-4.0",
-    reproduction="Review protocol; execute trusted scripts manually",
+    reproduction="Review protocol/api-protocol.txt",
 )
-entry = add_file(root, Path("README.md"), Role.protocol, "Example protocol input")
-report = validate_experiment(root)
-assert report["status"] != "FAIL"
-package = export_experiment(root, Path("api-demo.orepro"))
-imported = import_experiment(package, Path("experiments/api-imported"))
-print(inspect_experiment(imported))
+entry = api.add_file(root, source, api.Role.protocol, "Training protocol")
+api.update_metadata(root, {"keywords": ["training"], "institution": "Example lab"})
+report = api.validate_experiment(root)
+assert report["status"] == "PASS", report
+assert report["scientific_validity"] == "NOT_EVALUATED"
+package = api.export_experiment(root, Path("api-study.orepro"))
+restored = api.import_experiment(package, Path("api-restored"))
+assert api.validate_experiment(restored)["status"] == "PASS"
+record = api.publish_package(package, Path("api-catalog"))
+assert api.search_catalog(Path("api-catalog"), "API study")
+print(api.citation(Path("api-catalog"), record["sha256"]))
 ```
 
-`Manifest` and `FileEntry` are Pydantic models; use `model_dump(mode="json")`
-for JSON-compatible results. `add_file` accepts `derived_from: list[str]` referencing
-registered relative paths. `create_experiment` accepts `doi` and `experimental_date`
-as optional metadata, in addition to the fields above. Defaults use a fresh UUID,
-UTC timestamp and CC-BY-4.0 data license; choose a license you have permission to apply.
+`Manifest` and `FileEntry` are Pydantic models. Use `model_dump(mode="json")` for
+JSON-compatible results. Most other operations return dictionaries; search returns
+a list, imports/exports return a `Path`, and removal returns `None`. Consult the
+[reference](api-reference.md) before assuming a return shape.
 
-Use the transactional editing API for ordinary updates:
+## Metadata and paths
+
+`create_experiment(..., **metadata)` accepts the optional descriptive fields listed
+in [editing](editing.md), including domain, keywords, institution, DOI, experimental
+date and reproduction instructions. Defaults include a new UUID, UTC creation time
+and CC-BY-4.0 payload license. Choose a license appropriate to your actual rights.
+`update_metadata` preserves UUID, creation date, versions and inventory.
+
+`add_file(..., derived_from=["data/raw/input.csv"])` records relationships to
+already registered relative POSIX paths. Paths supplied as roots/sources are local
+`Path` objects; paths *inside a manifest* are portable relative strings. Replacement
+and removal reject inputs that still have registered dependents. Remove/recreate
+those derived outputs explicitly. See [editing and recovery](editing.md).
+
+## Errors and report status
 
 ```python
-from openrepro.experiments import update_metadata, replace_file, remove_file
+from pathlib import Path
+from openrepro import api
 
-update_metadata(root, {"title": "Revised study", "reproduction": "Read protocol.md"})
-replace_file(root, "data/raw/observations.csv", Path("revised-observations.csv"))
-remove_file(root, "results/tables/obsolete.csv")
+try:
+    report = api.validate_experiment(Path("received-study"))
+except (api.OpenReproError, OSError) as error:
+    print(f"Operation could not complete: {error}")
+else:
+    if report["status"] == "FAIL":
+        print("Validation completed but the workspace failed:", report["issues"])
 ```
 
-Replacement and removal reject files that still have registered dependents. Remove
-those derived outputs explicitly before changing their input. Required documents
-cannot be removed; provenance cannot be replaced. Metadata updates preserve UUID,
-creation date, schema/software versions and file inventory. See [editing](editing.md).
+Validation often returns a FAIL report for invalid input rather than raising.
+Comparison, doctor and reproduction also return status-bearing reports; check them.
+Pydantic validation and other invalid arguments may raise `ValueError`.
+Publication/recovery errors require preserving local journals and inspecting the
+remote state; do not retry by deleting evidence. Never log credentials/private data.
 
-`load` and `save` remain low-level primitives for format tooling. They do not append
-provenance or provide multi-file rollback; prefer the editing functions for user
-operations. Never edit checksums to conceal payload changes. Errors are
-`OpenReproError`/`ValueError` or filesystem exceptions.
+## Explicit reproduction and environments
 
-## Explicit reproduction (development)
+Load a reviewed JSON recipe with `json.loads(Path(...).read_text())`, then
+`api.Recipe.model_validate(...)`. `api.reproduction_plan(root, recipe)` validates
+without execution. After reviewing code, image, inputs, expected outputs and
+justified tolerances, call `api.reproduce(root, recipe, new_run_path,
+allow_execution=True)`. This needs Linux and a trusted local Docker daemon.
+`api.compare_results(root, output_directory, recipe.comparisons)` does not execute.
+Render a completed report with `api.render_report(run_path, new_html_path)`.
 
-```python
-from openrepro.reproduction import Recipe, reproduction_plan, reproduce, compare_results
-from openrepro.experiments import load_json
+`lock_environment(..., allow_download=True)` is explicit binary resolution;
+`build_environment(..., allow_build=True)` builds offline from registered hashes.
+The CLI additionally supports a combined environment/build/reproduce workflow;
+`api.reproduce` itself does not accept an environment-build argument. See
+[environments](environments.md), [execution](execution.md) and [signatures](api-reference.md).
 
-recipe = Recipe.model_validate(load_json(Path("recipe.json")))
-plan = reproduction_plan(root, recipe)  # no code execution or Docker access
-# After reviewing image, command, input files and tolerances:
-report = reproduce(root, recipe, Path("runs/new-run"), allow_execution=True)
-comparison = compare_results(root, Path("runs/new-run/outputs"), recipe.comparisons)
-```
+## Sharing and integration
 
-The runner requires Linux/local Docker, a preloaded immutable image ID and a new
-external destination. `compare_results` needs neither Docker nor execution opt-in.
-See [execution](execution.md) for the report schema, defaults and limitations.
-
-## Supported convenience imports
-
-`from openrepro import api` exposes the supported surface listed in `api.__all__`.
-Existing direct module imports remain compatible. The candidate adds:
-
-- `EnvironmentSpec`, `environment_plan`, `lock_environment`, `build_environment`:
-  validated inputs, explicit downloads and offline builds. See [environments](environments.md).
-- `create_recipe`, `doctor`, `render_report`: non-executing workflow assistance.
-- `recover_run`: idempotent cancellation of the matching labelled interrupted run.
-- `publish_package`, `search_catalog`, `fetch_package`, `citation`: immutable local exchange.
-- `deposit_bundle`, `zenodo_deposit`: local metadata preparation and resumable Zenodo drafts.
-  `publish=True` is explicit public publication; credentials are never function arguments.
-- `convert_crate`: explicit local RO-Crate conversion preserving the original graph.
-
-See [compatibility](compatibility.md) and [launch acceptance](launch-checklist.md).
+Catalog operations are local; `publish_package` is not Internet publication.
+`deposit_bundle` prepares files only. `zenodo_deposit` reads credentials from the
+secure runtime environment and publishes only with explicit `publish=True`.
+Conversion, doctor and recipe helpers never execute imported analysis.
+See [exchange](exchange.md), [Zenodo](zenodo.md), [conversion](interoperability.md)
+and [compatibility](compatibility.md) for operational boundaries.
