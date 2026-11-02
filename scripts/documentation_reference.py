@@ -2,6 +2,7 @@
 
 import argparse
 import inspect
+import re
 from pathlib import Path
 
 from openrepro import __version__, api
@@ -43,7 +44,9 @@ def rendered():
     cli_parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=80)
     cli = [
         "# Complete CLI options\n",
-        f"Generated from the installed {__version__} parser. Do not edit help blocks by hand.\n"
+        f"Generated from the installed {__version__} parser; "
+        "help wrapping can vary by Python version.\n"
+        "Do not edit help blocks by hand.\n"
         "Regenerate with `python scripts/documentation_reference.py --write`.\n"
         "See [CLI behavior and exit codes](cli-reference.md) for interpretation.\n",
         "## Top-level help\n\n```text\n" + cli_parser.format_help().rstrip() + "\n```\n",
@@ -80,14 +83,33 @@ def rendered():
             )
         else:
             reference.append(
-                f"```python\n{name}{inspect.signature(value)}\n```\n\n{RETURNS[name]}\n"
+                f"```python\n{name}{public_signature(value)}\n```\n\n{RETURNS[name]}\n"
             )
     return {"docs/cli-options.md": "\n".join(cli), "docs/api-reference.md": "\n".join(reference)}
 
 
+def public_signature(value):
+    # Python 3.13 moved Path's implementation into a private module. Document the
+    # public type rather than exposing that interpreter implementation detail.
+    return str(inspect.signature(value)).replace("pathlib._local.Path", "pathlib.Path")
+
+
+def normalize_help_wrapping(content):
+    # argparse 3.13 wraps usage groups differently. Ignore only usage-line
+    # whitespace, retaining option names, defaults, descriptions and ordering.
+    return re.sub(
+        r"(?m)^usage:.*(?:\n[ \t]+[^\n]+)*",
+        lambda match: " ".join(match.group().split()),
+        content,
+    )
+
+
 def check_references():
     for name, expected in rendered().items():
-        if (ROOT / name).read_text(encoding="utf-8") != expected:
+        actual = (ROOT / name).read_text(encoding="utf-8")
+        if name.endswith("cli-options.md"):
+            actual, expected = map(normalize_help_wrapping, (actual, expected))
+        if actual != expected:
             raise ValueError(f"Stale reference: {name}; run documentation_reference.py --write")
 
 

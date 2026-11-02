@@ -1,6 +1,7 @@
 # Complete CLI options
 
-Generated from the installed 1.0.0 parser. Do not edit help blocks by hand.
+Generated from the installed 1.0.0 parser; help wrapping can vary by Python version.
+Do not edit help blocks by hand.
 Regenerate with `python scripts/documentation_reference.py --write`.
 See [CLI behavior and exit codes](cli-reference.md) for interpretation.
 
